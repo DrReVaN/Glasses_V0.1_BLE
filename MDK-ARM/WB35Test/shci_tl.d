@@ -1,0 +1,12 @@
+wb35test\shci_tl.o: ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/shci_tl.c
+wb35test\shci_tl.o: ../Middlewares/ST/STM32_WPAN/stm32_wpan_common.h
+wb35test\shci_tl.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+wb35test\shci_tl.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+wb35test\shci_tl.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+wb35test\shci_tl.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+wb35test\shci_tl.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+wb35test\shci_tl.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
+wb35test\shci_tl.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
+wb35test\shci_tl.o: ../Middlewares/ST/STM32_WPAN/utilities/stm_list.h
+wb35test\shci_tl.o: ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/shci_tl.h
+wb35test\shci_tl.o: ../Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl/tl.h
