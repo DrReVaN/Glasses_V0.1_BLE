@@ -21,13 +21,35 @@ Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.0.8.0
 Dialog DLL:      TCM.DLL V1.46.0.0
  
 <h2>Project:</h2>
-D:\FH\Projekt 4.-5. Semester\Test_ble\WB35Test - Kopie\MDK-ARM\WB35Test.uvprojx
+D:\FH\Projekt 4.-5. Semester\Glasses_Firmware\Glasses_V0.1_BLE\MDK-ARM\WB35Test.uvprojx
 Project File Date:  01/16/2022
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'D:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'WB35Test'
-"WB35Test\WB35Test.axf" - 0 Error(s), 0 Warning(s).
+compiling custom_app.c...
+compiling main.c...
+.\RTE\ssd1306.h(123): warning:  #1295-D: Deprecated declaration ssd1306_GetDisplayOn - give arg types
+  uint8_t ssd1306_GetDisplayOn();
+../Core/Src/main.c(113): warning:  #1295-D: Deprecated declaration thread_oled_data - give arg types
+  void thread_oled_data(); 
+../Core/Src/main.c(114): warning:  #1295-D: Deprecated declaration timeupdate - give arg types
+  void timeupdate();
+../Core/Src/main.c(115): warning:  #1295-D: Deprecated declaration touchhelper - give arg types
+  void touchhelper();
+../Core/Src/main.c(116): warning:  #1295-D: Deprecated declaration pageclickhelper - give arg types
+  void pageclickhelper();
+../Core/Src/main.c(117): warning:  #1295-D: Deprecated declaration thread_touchdetection - give arg types
+  void thread_touchdetection();
+../Core/Src/main.c(118): warning:  #1295-D: Deprecated declaration thread_pageclick - give arg types
+  void thread_pageclick();
+../Core/Src/main.c(119): warning:  #1295-D: Deprecated declaration thread_oled_auto_off - give arg types
+  void thread_oled_auto_off();
+../Core/Src/main.c: 8 warnings, 0 errors
+linking...
+Program Size: Code=25088 RO-data=4396 RW-data=3252 ZI-data=3548  
+FromELF: creating hex file...
+"WB35Test\WB35Test.axf" - 0 Error(s), 8 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -51,7 +73,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.5.0
       Include file:  CMSIS\Core\Include\tz_context.h
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

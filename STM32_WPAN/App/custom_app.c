@@ -151,14 +151,11 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
     case CUSTOM_STM_PUSH_NOTIFICATION_WRITE_NO_RESP_EVT:
       /* USER CODE BEGIN CUSTOM_STM_PUSH_NOTIFICATION_WRITE_NO_RESP_EVT */
 		
-			
-		
 			if(pNotification->DataTransfered.pPayload[0] == 0x00) {
 				memset(text, 0, 128);		//set array to 0
 				maxRx = pNotification->DataTransfered.pPayload[1];
 				rxCounter = 0;
 				PushIndex = 0;
-				
 			}
 			
 			PushIndexLength = 0;
@@ -229,11 +226,9 @@ void Custom_APP_Notification(Custom_App_ConnHandle_Not_evt_t *pNotification)
     case CUSTOM_CONN_HANDLE_EVT :
       /* USER CODE BEGIN CUSTOM_CONN_HANDLE_EVT */
 			bleConnected = 1;
+			page = 4;
 			if(powerOff != 1) {
-				page = 4; 
 				EventFlag = 2;
-			} else {
-				page = 4;
 			}
       /* USER CODE END CUSTOM_CONN_HANDLE_EVT */
       break;
@@ -241,12 +236,10 @@ void Custom_APP_Notification(Custom_App_ConnHandle_Not_evt_t *pNotification)
     case CUSTOM_DISCON_HANDLE_EVT :
       /* USER CODE BEGIN CUSTOM_DISCON_HANDLE_EVT */
 			bleConnected = 0;
+			page = 3;
 			if(powerOff != 1) {
-				page = 3;
 				EventFlag = 2;
-			} else {
-				page = 3;
-			}
+			} 
       /* USER CODE END CUSTOM_DISCON_HANDLE_EVT */
       break;
 

@@ -782,8 +782,8 @@ void thread_oled_data(){
 			case 1:
 				ssd1306_Fill(Black);
 				ssd1306_UpdateScreen();	
-				ssd1306_SetCursor(11, 61);
-				ssd1306_WriteString((char *)"SMS", Font_7x10, White);
+				ssd1306_SetCursor(9, 61);
+				ssd1306_WriteString((char *)"Msg", Font_7x10, White);
 				ssd1306_UpdateScreen();
 				
 				cursor = 14;					
@@ -794,13 +794,9 @@ void thread_oled_data(){
 				
 				if(newMessage) {
 					TIM1->CCR3 = 50;
-					HAL_Delay(200);
+					HAL_Delay(50);
 					TIM1->CCR3 = 0;
-					HAL_Delay(200);
-					TIM1->CCR3 = 50;
-					HAL_Delay(200);
-					TIM1->CCR3 = 0;
-					HAL_Delay(400);
+					HAL_Delay(950);
 					
 					
 				}	else {

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [WB35Test\WB35Test.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image WB35Test\WB35Test.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Mon Jan 17 21:45:28 2022
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Tue Jan 18 13:59:34 2022
 <BR><P>
 <H3>Maximum Stack Usage =        640 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -435,9 +435,9 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[77]"></a>__aeabi_memcpy</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, rt_memcpy_v6.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[15c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_send
-<LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_send_req
+<BR><BR>[Called By]<UL><LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_send_req
 <LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;memcpy
+<LI><a href="#[15c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_send
 </UL>
 
 <P><STRONG><a name="[74]"></a>__rt_memcpy</STRONG> (Thumb, 138 bytes, Stack size 0 bytes, rt_memcpy_v6.o(.text), UNUSED)
@@ -499,10 +499,10 @@ Global Symbols
 <LI><a href="#[153]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PeriphCommonClock_Config
 <LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM1_Init
 <LI><a href="#[147]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
-<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SPI_MspInit
 <LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RTC_MspInit
 <LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_MspInit
 <LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;APPD_SetCPU2GpioConfig
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SPI_MspInit
 </UL>
 
 <P><STRONG><a name="[1d3]"></a>__aeabi_memclr8</STRONG> (Thumb, 0 bytes, Stack size 4 bytes, rt_memclr_w.o(.text), UNUSED)
@@ -831,9 +831,9 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_MspPostInit
 <LI><a href="#[147]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
-<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SPI_MspInit
 <LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_MspInit
 <LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;APPD_SetCPU2GpioConfig
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SPI_MspInit
 </UL>
 
 <P><STRONG><a name="[8a]"></a>HAL_GPIO_WritePin</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, stm32wbxx_hal_gpio.o(i.HAL_GPIO_WritePin))
@@ -853,10 +853,10 @@ Global Symbols
 <LI><a href="#[e9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_ClockConfig
 <LI><a href="#[cf]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCCEx_PeriphCLKConfig
 <LI><a href="#[c0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Delay
-<LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_SetFlashLatency
 <LI><a href="#[e8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCCEx_PLLSAI1_ConfigNR
 <LI><a href="#[e6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCCEx_PLLSAI1_ConfigNQ
 <LI><a href="#[e0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCCEx_PLLSAI1_ConfigNP
+<LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_SetFlashLatency
 <LI><a href="#[cd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Master_Transmit
 <LI><a href="#[c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_Master_Receive
 <LI><a href="#[ce]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;I2C_WaitOnTXISFlagUntilTimeout
@@ -1020,13 +1020,13 @@ Global Symbols
 
 <P><STRONG><a name="[d8]"></a>HAL_NVIC_EnableIRQ</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32wbxx_hal_cortex.o(i.HAL_NVIC_EnableIRQ))
 <BR><BR>[Called By]<UL><LI><a href="#[147]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
-<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_Base_MspInit
 <LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RTC_MspInit
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_MspInit
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_IPCC_MspInit
 <LI><a href="#[132]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_TS_Stop
 <LI><a href="#[135]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_TS_Start
 <LI><a href="#[12e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_TS_Init
+<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_Base_MspInit
 <LI><a href="#[123]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_Init
 </UL>
 
@@ -1041,12 +1041,12 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[df]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__NVIC_SetPriority
 </UL>
 <BR>[Called By]<UL><LI><a href="#[147]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
-<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_Base_MspInit
 <LI><a href="#[fa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RTC_MspInit
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_MspInit
 <LI><a href="#[d3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_IPCC_MspInit
 <LI><a href="#[12e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_TS_Init
 <LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_InitTick
+<LI><a href="#[103]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_Base_MspInit
 </UL>
 
 <P><STRONG><a name="[da]"></a>HAL_NVIC_SetPriorityGrouping</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, stm32wbxx_hal_cortex.o(i.HAL_NVIC_SetPriorityGrouping))
@@ -1090,14 +1090,14 @@ Global Symbols
 <P><STRONG><a name="[e9]"></a>HAL_RCC_ClockConfig</STRONG> (Thumb, 496 bytes, Stack size 24 bytes, stm32wbxx_hal_rcc.o(i.HAL_RCC_ClockConfig))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = HAL_RCC_ClockConfig &rArr; HAL_InitTick &rArr; HAL_RCC_GetHCLKFreq &rArr; HAL_RCC_GetSysClockFreq
 </UL>
-<BR>[Calls]<UL><LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_MSI_IsReady
-<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_HSI_IsReady
-<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_HSE_IsReady
-<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_GetSysClkSource
-<LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+<BR>[Calls]<UL><LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
 <LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_InitTick
 <LI><a href="#[ee]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTickPrio
 <LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_GetHCLKFreq
+<LI><a href="#[ec]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_MSI_IsReady
+<LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_HSI_IsReady
+<LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_HSE_IsReady
+<LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_GetSysClkSource
 </UL>
 <BR>[Called By]<UL><LI><a href="#[17b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
 </UL>
@@ -1126,6 +1126,9 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = HAL_RCC_OscConfig &rArr; RCC_SetFlashLatencyFromMSIRange &rArr; RCC_SetFlashLatency
 </UL>
 <BR>[Calls]<UL><LI><a href="#[e1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_PWR_EnableBkUpAccess
+<LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
+<LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_InitTick
+<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_GetHCLKFreq
 <LI><a href="#[f3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_SetFlashLatencyFromMSIRange
 <LI><a href="#[f0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_PLL_GetMainSource
 <LI><a href="#[f4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_MSI_SetRange
@@ -1137,9 +1140,6 @@ Global Symbols
 <LI><a href="#[ea]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_HSI_IsReady
 <LI><a href="#[eb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_HSE_IsReady
 <LI><a href="#[ed]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_RCC_GetSysClkSource
-<LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GetTick
-<LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_InitTick
-<LI><a href="#[dd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_GetHCLKFreq
 </UL>
 <BR>[Called By]<UL><LI><a href="#[17b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
 </UL>
@@ -1264,12 +1264,12 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[105]"></a>HAL_TIM_ConfigClockSource</STRONG> (Thumb, 220 bytes, Stack size 16 bytes, stm32wbxx_hal_tim.o(i.HAL_TIM_ConfigClockSource))
-<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = HAL_TIM_ConfigClockSource &rArr; TIM_TI2_ConfigInputStage
+<BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = HAL_TIM_ConfigClockSource &rArr; TIM_ETR_SetConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TI2_ConfigInputStage
+<BR>[Calls]<UL><LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_ETR_SetConfig
+<LI><a href="#[108]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TI2_ConfigInputStage
 <LI><a href="#[107]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TI1_ConfigInputStage
 <LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_ITRx_SetConfig
-<LI><a href="#[106]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_ETR_SetConfig
 </UL>
 <BR>[Called By]<UL><LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM1_Init
 </UL>
@@ -1310,12 +1310,12 @@ Global Symbols
 <P><STRONG><a name="[114]"></a>HAL_TIM_PWM_ConfigChannel</STRONG> (Thumb, 292 bytes, Stack size 16 bytes, stm32wbxx_hal_tim.o(i.HAL_TIM_PWM_ConfigChannel))
 <BR><BR>[Stack]<UL><LI>Max Depth = 36<LI>Call Chain = HAL_TIM_PWM_ConfigChannel &rArr; TIM_OC1_SetConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_OC6_SetConfig
+<BR>[Calls]<UL><LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_OC2_SetConfig
+<LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_OC6_SetConfig
 <LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_OC5_SetConfig
 <LI><a href="#[118]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_OC4_SetConfig
 <LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_OC3_SetConfig
 <LI><a href="#[115]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_OC1_SetConfig
-<LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_OC2_SetConfig
 </UL>
 <BR>[Called By]<UL><LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM1_Init
 </UL>
@@ -1383,9 +1383,9 @@ Global Symbols
 <P><STRONG><a name="[11f]"></a>HW_IPCC_BLE_RxEvtNot</STRONG> (Thumb, 54 bytes, Stack size 16 bytes, tl_mbox.o(i.HW_IPCC_BLE_RxEvtNot))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = HW_IPCC_BLE_RxEvtNot &rArr; LST_remove_head
 </UL>
-<BR>[Calls]<UL><LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_remove_head
+<BR>[Calls]<UL><LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OutputDbgTrace
+<LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_remove_head
 <LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_is_empty
-<LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OutputDbgTrace
 </UL>
 <BR>[Called By]<UL><LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_Rx_Handler
 </UL>
@@ -1419,10 +1419,10 @@ Global Symbols
 <P><STRONG><a name="[126]"></a>HW_IPCC_Rx_Handler</STRONG> (Thumb, 88 bytes, Stack size 16 bytes, hw_ipcc.o(i.HW_IPCC_Rx_Handler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = HW_IPCC_Rx_Handler &rArr; HW_IPCC_SYS_EvtNot &rArr; LST_remove_head
 </UL>
-<BR>[Calls]<UL><LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_TRACES_EvtNot
+<BR>[Calls]<UL><LI><a href="#[127]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_C2_IPCC_IsActiveFlag_CHx
+<LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_TRACES_EvtNot
 <LI><a href="#[128]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_SYS_EvtNot
 <LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_BLE_RxEvtNot
-<LI><a href="#[127]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_C2_IPCC_IsActiveFlag_CHx
 </UL>
 <BR>[Called By]<UL><LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IPCC_C1_RX_IRQHandler
 </UL>
@@ -1438,9 +1438,9 @@ Global Symbols
 <P><STRONG><a name="[128]"></a>HW_IPCC_SYS_EvtNot</STRONG> (Thumb, 40 bytes, Stack size 16 bytes, tl_mbox.o(i.HW_IPCC_SYS_EvtNot))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = HW_IPCC_SYS_EvtNot &rArr; LST_remove_head
 </UL>
-<BR>[Calls]<UL><LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_remove_head
+<BR>[Calls]<UL><LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OutputDbgTrace
+<LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_remove_head
 <LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_is_empty
-<LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OutputDbgTrace
 </UL>
 <BR>[Called By]<UL><LI><a href="#[126]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_Rx_Handler
 </UL>
@@ -1470,9 +1470,9 @@ Global Symbols
 <P><STRONG><a name="[12c]"></a>HW_IPCC_Tx_Handler</STRONG> (Thumb, 112 bytes, Stack size 16 bytes, hw_ipcc.o(i.HW_IPCC_Tx_Handler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = HW_IPCC_Tx_Handler &rArr; HW_IPCC_SYS_CmdEvtNot
 </UL>
-<BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_SYS_CmdEvtNot
+<BR>[Calls]<UL><LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_C1_IPCC_IsActiveFlag_CHx
+<LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_SYS_CmdEvtNot
 <LI><a href="#[12d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_BLE_AclDataAckNot
-<LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LL_C1_IPCC_IsActiveFlag_CHx
 </UL>
 <BR>[Called By]<UL><LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;IPCC_C1_TX_IRQHandler
 </UL>
@@ -1576,9 +1576,9 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TL_TRACES_Init
 <LI><a href="#[142]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_init
 <LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TL_MM_Init
+<LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_init
 <LI><a href="#[61]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TL_SYS_Init
 <LI><a href="#[5d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TL_BLE_Init
-<LI><a href="#[8f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_init
 </UL>
 
 <P><STRONG><a name="[194]"></a>LST_insert_head</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm_list.o(i.LST_insert_head))
@@ -1587,20 +1587,20 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[179]"></a>LST_insert_tail</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm_list.o(i.LST_insert_tail))
-<BR><BR>[Called By]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TlUserEvtReceived
-<LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TlEvtReceived
+<BR><BR>[Called By]<UL><LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendFreeBuf
 <LI><a href="#[180]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TL_MM_EvtDone
-<LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendFreeBuf
+<LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TlUserEvtReceived
+<LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TlEvtReceived
 </UL>
 
 <P><STRONG><a name="[122]"></a>LST_is_empty</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm_list.o(i.LST_is_empty))
 <BR><BR>[Called By]<UL><LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_user_evt_proc
-<LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_TRACES_EvtNot
-<LI><a href="#[128]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_SYS_EvtNot
-<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_BLE_RxEvtNot
 <LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendFreeBuf
 <LI><a href="#[53]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_user_evt_proc
 <LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_send_req
+<LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_TRACES_EvtNot
+<LI><a href="#[128]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_SYS_EvtNot
+<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_BLE_RxEvtNot
 </UL>
 
 <P><STRONG><a name="[120]"></a>LST_remove_head</STRONG> (Thumb, 24 bytes, Stack size 8 bytes, stm_list.o(i.LST_remove_head))
@@ -1609,12 +1609,12 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[13b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_remove_node
 </UL>
 <BR>[Called By]<UL><LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_user_evt_proc
-<LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_TRACES_EvtNot
-<LI><a href="#[128]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_SYS_EvtNot
-<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_BLE_RxEvtNot
 <LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendFreeBuf
 <LI><a href="#[53]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_user_evt_proc
 <LI><a href="#[18e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_send_req
+<LI><a href="#[129]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_TRACES_EvtNot
+<LI><a href="#[128]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_SYS_EvtNot
+<LI><a href="#[11f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_BLE_RxEvtNot
 </UL>
 
 <P><STRONG><a name="[13b]"></a>LST_remove_node</STRONG> (Thumb, 24 bytes, Stack size 0 bytes, stm_list.o(i.LST_remove_node))
@@ -1921,8 +1921,8 @@ Global Symbols
 <P><STRONG><a name="[5d]"></a>TL_BLE_Init</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, tl_mbox.o(i.TL_BLE_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = TL_BLE_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
-<LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_BLE_Init
+<BR>[Calls]<UL><LI><a href="#[17d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_BLE_Init
+<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> hci_tl_if.o(i.hci_register_io_bus)
 </UL>
@@ -1953,9 +1953,9 @@ Global Symbols
 <P><STRONG><a name="[180]"></a>TL_MM_EvtDone</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, tl_mbox.o(i.TL_MM_EvtDone))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = TL_MM_EvtDone &rArr; HW_IPCC_MM_SendFreeBuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[179]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_insert_tail
-<LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OutputDbgTrace
+<BR>[Calls]<UL><LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OutputDbgTrace
 <LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_MM_SendFreeBuf
+<LI><a href="#[179]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_insert_tail
 </UL>
 <BR>[Called By]<UL><LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_user_evt_proc
 <LI><a href="#[53]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_user_evt_proc
@@ -1972,8 +1972,8 @@ Global Symbols
 <P><STRONG><a name="[61]"></a>TL_SYS_Init</STRONG> (Thumb, 40 bytes, Stack size 8 bytes, tl_mbox.o(i.TL_SYS_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = TL_SYS_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
-<LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_SYS_Init
+<BR>[Calls]<UL><LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_SYS_Init
+<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> shci_tl_if.o(i.shci_register_io_bus)
 </UL>
@@ -1992,8 +1992,8 @@ Global Symbols
 <P><STRONG><a name="[80]"></a>TL_TRACES_Init</STRONG> (Thumb, 24 bytes, Stack size 8 bytes, tl_mbox.o(i.TL_TRACES_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = TL_TRACES_Init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
-<LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_TRACES_Init
+<BR>[Calls]<UL><LI><a href="#[183]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HW_IPCC_TRACES_Init
+<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
 </UL>
 <BR>[Called By]<UL><LI><a href="#[7f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;APPD_EnableCPU2
 </UL>
@@ -2287,8 +2287,8 @@ Global Symbols
 <P><STRONG><a name="[8f]"></a>hci_init</STRONG> (Thumb, 64 bytes, Stack size 32 bytes, hci_tl.o(i.hci_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = hci_init
 </UL>
-<BR>[Calls]<UL><LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_register_io_bus
-<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
+<BR>[Calls]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
+<LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_register_io_bus
 </UL>
 <BR>[Called By]<UL><LI><a href="#[8d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;APP_BLE_Init
 </UL>
@@ -2308,8 +2308,8 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[192]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UTIL_SEQ_SetTask
 </UL>
-<BR>[Called By]<UL><LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TlEvtReceived
-<LI><a href="#[53]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_user_evt_proc
+<BR>[Called By]<UL><LI><a href="#[53]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_user_evt_proc
+<LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TlEvtReceived
 </UL>
 
 <P><STRONG><a name="[191]"></a>hci_register_io_bus</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, hci_tl_if.o(i.hci_register_io_bus))
@@ -2329,11 +2329,11 @@ Global Symbols
 <P><STRONG><a name="[18e]"></a>hci_send_req</STRONG> (Thumb, 168 bytes, Stack size 32 bytes, hci_tl.o(i.hci_send_req))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = hci_send_req &rArr; hci_cmd_resp_wait &rArr; UTIL_SEQ_WaitEvt &rArr; UTIL_SEQ_EvtIdle &rArr; UTIL_SEQ_Run
 </UL>
-<BR>[Calls]<UL><LI><a href="#[193]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NotifyCmdStatus
+<BR>[Calls]<UL><LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_cmd_resp_wait
+<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_remove_head
 <LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_is_empty
-<LI><a href="#[190]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_cmd_resp_wait
-<LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
+<LI><a href="#[193]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;NotifyCmdStatus
 </UL>
 <BR>[Called By]<UL><LI><a href="#[be]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;aci_gatt_write_resp
 <LI><a href="#[166]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;aci_gatt_add_service
@@ -2359,11 +2359,11 @@ Global Symbols
 <P><STRONG><a name="[53]"></a>hci_user_evt_proc</STRONG> (Thumb, 98 bytes, Stack size 24 bytes, hci_tl.o(i.hci_user_evt_proc))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = hci_user_evt_proc &rArr; TL_MM_EvtDone &rArr; HW_IPCC_MM_SendFreeBuf
 </UL>
-<BR>[Calls]<UL><LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_remove_head
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_notify_asynch_evt
+<LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_insert_head
+<LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_remove_head
 <LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_is_empty
 <LI><a href="#[180]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TL_MM_EvtDone
-<LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_notify_asynch_evt
-<LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_insert_head
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> app_ble.o(i.APP_BLE_Init)
 </UL>
@@ -2415,9 +2415,9 @@ Global Symbols
 <P><STRONG><a name="[142]"></a>shci_init</STRONG> (Thumb, 66 bytes, Stack size 32 bytes, shci_tl.o(i.shci_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = shci_init &rArr; Cmd_SetStatus
 </UL>
-<BR>[Calls]<UL><LI><a href="#[19c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_register_io_bus
+<BR>[Calls]<UL><LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
+<LI><a href="#[19c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_register_io_bus
 <LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Cmd_SetStatus
-<LI><a href="#[17c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_init_head
 </UL>
 <BR>[Called By]<UL><LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_APPE_Init
 </UL>
@@ -2427,8 +2427,8 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[192]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UTIL_SEQ_SetTask
 </UL>
-<BR>[Called By]<UL><LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TlUserEvtReceived
-<LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_user_evt_proc
+<BR>[Called By]<UL><LI><a href="#[57]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_user_evt_proc
+<LI><a href="#[60]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TlUserEvtReceived
 </UL>
 
 <P><STRONG><a name="[19c]"></a>shci_register_io_bus</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, shci_tl_if.o(i.shci_register_io_bus))
@@ -2438,9 +2438,9 @@ Global Symbols
 <P><STRONG><a name="[15c]"></a>shci_send</STRONG> (Thumb, 82 bytes, Stack size 24 bytes, shci_tl.o(i.shci_send))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = shci_send &rArr; shci_cmd_resp_wait &rArr; UTIL_SEQ_WaitEvt &rArr; UTIL_SEQ_EvtIdle &rArr; UTIL_SEQ_Run
 </UL>
-<BR>[Calls]<UL><LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Cmd_SetStatus
-<LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_cmd_resp_wait
+<BR>[Calls]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_cmd_resp_wait
 <LI><a href="#[77]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memcpy
+<LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Cmd_SetStatus
 </UL>
 <BR>[Called By]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SHCI_C2_DEBUG_Init
 <LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SHCI_C2_Config
@@ -2451,10 +2451,10 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = shci_user_evt_proc &rArr; TL_MM_EvtDone &rArr; HW_IPCC_MM_SendFreeBuf
 </UL>
 <BR>[Calls]<UL><LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;shci_notify_asynch_evt
+<LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_insert_head
 <LI><a href="#[120]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_remove_head
 <LI><a href="#[122]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_is_empty
 <LI><a href="#[180]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TL_MM_EvtDone
-<LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_insert_head
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> app_entry.o(i.MX_APPE_Init)
 </UL>
@@ -2577,7 +2577,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[197]"></a>thread_oled_data</STRONG> (Thumb, 738 bytes, Stack size 40 bytes, main.o(i.thread_oled_data))
+<P><STRONG><a name="[197]"></a>thread_oled_data</STRONG> (Thumb, 720 bytes, Stack size 40 bytes, main.o(i.thread_oled_data))
 <BR><BR>[Stack]<UL><LI>Max Depth = 192<LI>Call Chain = thread_oled_data &rArr; ssd1306_Init &rArr; ssd1306_UpdateScreen &rArr; ssd1306_WriteData &rArr; HAL_SPI_Transmit &rArr; SPI_EndRxTxTransaction &rArr; SPI_WaitFifoStateUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ssd1306_WriteString
@@ -2807,8 +2807,8 @@ Local Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = LL_AHB2_GRP1_EnableClock
 </UL>
 <BR>[Called By]<UL><LI><a href="#[113]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_MspPostInit
-<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SPI_MspInit
 <LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_I2C_MspInit
+<LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_SPI_MspInit
 </UL>
 
 <P><STRONG><a name="[d6]"></a>LL_AHB3_GRP1_EnableClock</STRONG> (Thumb, 20 bytes, Stack size 8 bytes, stm32wbxx_hal_msp.o(i.LL_AHB3_GRP1_EnableClock))
@@ -2890,8 +2890,8 @@ Local Symbols
 <P><STRONG><a name="[f3]"></a>RCC_SetFlashLatencyFromMSIRange</STRONG> (Thumb, 62 bytes, Stack size 8 bytes, stm32wbxx_hal_rcc.o(i.RCC_SetFlashLatencyFromMSIRange))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = RCC_SetFlashLatencyFromMSIRange &rArr; RCC_SetFlashLatency
 </UL>
-<BR>[Calls]<UL><LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_SetFlashLatency
-<LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_PWREx_GetVoltageRange
+<BR>[Calls]<UL><LI><a href="#[158]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_PWREx_GetVoltageRange
+<LI><a href="#[157]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;RCC_SetFlashLatency
 </UL>
 <BR>[Called By]<UL><LI><a href="#[f2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_RCC_OscConfig
 </UL>
@@ -3208,9 +3208,9 @@ Local Symbols
 <P><STRONG><a name="[5c]"></a>TlEvtReceived</STRONG> (Thumb, 46 bytes, Stack size 8 bytes, hci_tl.o(i.TlEvtReceived))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = TlEvtReceived &rArr; hci_notify_asynch_evt &rArr; UTIL_SEQ_SetTask
 </UL>
-<BR>[Calls]<UL><LI><a href="#[179]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_insert_tail
-<LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_notify_asynch_evt
+<BR>[Calls]<UL><LI><a href="#[185]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_notify_asynch_evt
 <LI><a href="#[186]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;hci_cmd_resp_release
+<LI><a href="#[179]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LST_insert_tail
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> hci_tl.o(i.hci_init)
 </UL>
