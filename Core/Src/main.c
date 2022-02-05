@@ -703,8 +703,11 @@ void thread_touchdetection(){
 						}
 						
 						if(cs_value[0] == ON) {
-								/*page = 4;
-								EventFlag = 2; */
+								if(touchcounterCS1>2000) {
+									page = 0;
+									EventFlag = 2;
+									touchcounterCS2 = 0; 
+								}
 						}
 						else if(cs_value[1] == ON) {
 								if(touchcounterCS2>3000) {
@@ -794,9 +797,9 @@ void thread_oled_data(){
 				
 				if(newMessage) {
 					TIM1->CCR3 = 50;
-					HAL_Delay(50);
+					HAL_Delay(100);
 					TIM1->CCR3 = 0;
-					HAL_Delay(950);
+					HAL_Delay(900);
 					
 					
 				}	else {
