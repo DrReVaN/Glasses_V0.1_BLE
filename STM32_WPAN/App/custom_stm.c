@@ -1,468 +1,116 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file    App/custom_stm.c
-  * @author  MCD Application Team
-  * @brief   Custom Example Service.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-
-/* Includes ------------------------------------------------------------------*/
+/* Original ST-generated service scaffolding: Copyright (c) 2022 STMicroelectronics.
+ * The original repository provides it AS-IS when no component LICENSE is included. */
+/* Custom Smartglasses GATT service, UUIDs retained for the companion app.
+ * All writes require encrypted, authenticated Secure Connections. ATT requests
+ * are processed exactly once, with explicit errors and flow control. */
 #include "common_blesvc.h"
 #include "custom_stm.h"
-
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-typedef struct{
-  uint16_t  CustomDvc_Info_SvcHdle;                    /**< DVC_INFO_SVC handle */
-  uint16_t  CustomDvc_Fw_NrHdle;                  /**< DVC_FW_NR handle */
-  uint16_t  CustomDvc_NameHdle;                  /**< DVC_NAME handle */
-  uint16_t  CustomReceive_SvcHdle;                    /**< RECEIVE_SVC handle */
-  uint16_t  CustomTime_UpdateHdle;                  /**< TIME_UPDATE handle */
-  uint16_t  CustomPush_NotificationHdle;                  /**< PUSH_NOTIFICATION handle */
-}CustomContext_t;
-
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private defines -----------------------------------------------------------*/
-#define UUID_128_SUPPORTED  1
-
-#if (UUID_128_SUPPORTED == 1)
-#define BM_UUID_LENGTH  UUID_TYPE_128
-#else
-#define BM_UUID_LENGTH  UUID_TYPE_16
+#include "glasses_app.h"
+#include "glasses_ota.h"
+#include <string.h>
+#if CFG_BONDING_MODE != 1 || CFG_SC_SUPPORT != CFG_SECURE_MANDATORY || CFG_ENCRYPTION_KEY_SIZE_MIN != 16
+#error "Smartglasses requires bonded Secure Connections with 16-byte encryption keys"
 #endif
-
-#define BM_REQ_CHAR_SIZE    (3)
-
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macros ------------------------------------------------------------*/
-#define CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET         2
-#define CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET              1
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-static const uint8_t SizeDvc_Fw_Nr=4;
-static const uint8_t SizeDvc_Name=32;
-static const uint8_t SizeTime_Update=32;
-static const uint8_t SizePush_Notification=128;
-/**
- * START of Section BLE_DRIVER_CONTEXT
- */
-PLACE_IN_SECTION("BLE_DRIVER_CONTEXT") static CustomContext_t CustomContext;
-
-/**
- * END of Section BLE_DRIVER_CONTEXT
- */
-
-/* USER CODE BEGIN PV */
-extern int Trigger;
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *pckt);
-
-/* USER CODE BEGIN PFP */
-
-/* USER CODE END PFP */
-
-/* Functions Definition ------------------------------------------------------*/
-/* USER CODE BEGIN PFD */
-
-/* USER CODE END PFD */
-
-/* Private functions ----------------------------------------------------------*/
-
-#define COPY_UUID_128(uuid_struct, uuid_15, uuid_14, uuid_13, uuid_12, uuid_11, uuid_10, uuid_9, uuid_8, uuid_7, uuid_6, uuid_5, uuid_4, uuid_3, uuid_2, uuid_1, uuid_0) \
-do {\
-    uuid_struct[0] = uuid_0; uuid_struct[1] = uuid_1; uuid_struct[2] = uuid_2; uuid_struct[3] = uuid_3; \
-        uuid_struct[4] = uuid_4; uuid_struct[5] = uuid_5; uuid_struct[6] = uuid_6; uuid_struct[7] = uuid_7; \
-            uuid_struct[8] = uuid_8; uuid_struct[9] = uuid_9; uuid_struct[10] = uuid_10; uuid_struct[11] = uuid_11; \
-                uuid_struct[12] = uuid_12; uuid_struct[13] = uuid_13; uuid_struct[14] = uuid_14; uuid_struct[15] = uuid_15; \
-}while(0)
-
-/* Hardware Characteristics Service */
-/*
- The following 128bits UUIDs have been generated from the random UUID
- generator:
- D973F2E0-B19E-11E2-9E96-0800200C9A66: Service 128bits UUID
- D973F2E1-B19E-11E2-9E96-0800200C9A66: Characteristic_1 128bits UUID
- D973F2E2-B19E-11E2-9E96-0800200C9A66: Characteristic_2 128bits UUID
- */
-#define COPY_DVC_INFO_SVC_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x10,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
-#define COPY_DVC_FW_NR_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x11,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_DVC_NAME_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x12,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_RECEIVE_SVC_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x20,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
-#define COPY_TIME_UPDATE_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x21,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_PUSH_NOTIFICATION_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x22,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-
-/* USER CODE BEGIN PF */
-
-/* USER CODE END PF */
-
-/**
- * @brief  Event handler
- * @param  Event: Address of the buffer holding the Event
- * @retval Ack: Return whether the Event has been managed or not
- */
-static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
-{
-  SVCCTL_EvtAckStatus_t return_value;
-  hci_event_pckt *event_pckt;
-  evt_blecore_aci *blecore_evt;
-  aci_gatt_attribute_modified_event_rp0 *attribute_modified;
-  aci_gatt_write_permit_req_event_rp0   *write_perm_req;
-  Custom_STM_App_Notification_evt_t     Notification;
-  /* USER CODE BEGIN Custom_STM_Event_Handler_1 */
-	
-  /* USER CODE END Custom_STM_Event_Handler_1 */
-
-  return_value = SVCCTL_EvtNotAck;
-  event_pckt = (hci_event_pckt *)(((hci_uart_pckt*)Event)->data);
-
-  switch(event_pckt->evt)
-  {
-    case HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE:
-      blecore_evt = (evt_blecore_aci*)event_pckt->data;
-		
-
-      switch(blecore_evt->ecode)
-      {
-        case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
-          /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
-
-          /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
-          attribute_modified = (aci_gatt_attribute_modified_event_rp0*)blecore_evt->data;
-          if(attribute_modified->Attr_Handle == (CustomContext.CustomTime_UpdateHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
-          {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            /* USER CODE BEGIN CUSTOM_STM_Service_2_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-						
-						//Handle Char changes -> send Notification to custom_app.c
-						Notification.Custom_Evt_Opcode = CUSTOM_STM_TIME_UPDATE_WRITE_NO_RESP_EVT;
-						Notification.DataTransfered.pPayload = attribute_modified->Attr_Data;		//Payload Array data in hex format
-						Notification.DataTransfered.Length = attribute_modified->Attr_Data_Length;
-            Custom_STM_App_Notification(&Notification);
-						
-            /* USER CODE END CUSTOM_STM_Service_2_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-          } /* if(attribute_modified->Attr_Handle == (CustomContext.CustomTime_UpdateHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
-          else if(attribute_modified->Attr_Handle == (CustomContext.CustomPush_NotificationHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
-          {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            /* USER CODE BEGIN CUSTOM_STM_Service_2_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-						
-						//Handle Char changes -> send Notification to custom_app.c
-						Notification.Custom_Evt_Opcode = CUSTOM_STM_PUSH_NOTIFICATION_WRITE_NO_RESP_EVT;
-						Notification.DataTransfered.pPayload = attribute_modified->Attr_Data;		//Payload Array data in hex format
-						Notification.DataTransfered.Length = attribute_modified->Attr_Data_Length;
-            Custom_STM_App_Notification(&Notification);
-						
-            /* USER CODE END CUSTOM_STM_Service_2_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
-          } /* if(attribute_modified->Attr_Handle == (CustomContext.CustomPush_NotificationHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
-          /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
-
-          /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
-          break;
-
-        case ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE :
-          /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
-
-          /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_BEGIN */
-          /* USER CODE BEGIN EVT_BLUE_GATT_READ_PERMIT_REQ_END */
-
-          /* USER CODE END EVT_BLUE_GATT_READ_PERMIT_REQ_END */
-          break;
-
-        case ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE:
-          /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
-
-          /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_BEGIN */
-          write_perm_req = (aci_gatt_write_permit_req_event_rp0*)blecore_evt->data;
-          if(write_perm_req->Attribute_Handle == (CustomContext.CustomTime_UpdateHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
-          {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            /* Allow or reject a write request from a client using aci_gatt_write_resp(...) function */
-            /*USER CODE BEGIN CUSTOM_STM_Service_2_Char_1_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
-						
-              /* received a correct value for char */
-              aci_gatt_write_resp(write_perm_req->Connection_Handle,
-                                  write_perm_req->Attribute_Handle,
-                                  0x00,    /* write_status = 0 (no error))*/
-                                  0x00,    /* err_code */
-                                  write_perm_req->Data_Length,
-                                  (uint8_t *)&write_perm_req->Data[0]);
-              /**
-               * Notify the application to 
-               */
-							Notification.Custom_Evt_Opcode = CUSTOM_STM_TIME_UPDATE_WRITE_NO_RESP_EVT;
-							Notification.DataTransfered.pPayload = write_perm_req->Data; 
-							Notification.DataTransfered.Length = write_perm_req->Data_Length; 
-              Custom_STM_App_Notification(&Notification);
-            
-            /*USER CODE END CUSTOM_STM_Service_2_Char_1_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
-          } /*if(write_perm_req->Attribute_Handle == (CustomContext.CustomTime_UpdateHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
-
-          else if(write_perm_req->Attribute_Handle == (CustomContext.CustomPush_NotificationHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
-          {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            /* Allow or reject a write request from a client using aci_gatt_write_resp(...) function */
-            /*USER CODE BEGIN CUSTOM_STM_Service_2_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
-						
-						aci_gatt_write_resp(write_perm_req->Connection_Handle,
-                                  write_perm_req->Attribute_Handle,
-                                  0x00,    /* write_status = 0 (no error))*/
-                                  0x00,    /* err_code */
-                                  write_perm_req->Data_Length,
-                                  (uint8_t *)&write_perm_req->Data[0]);
-              /**
-               * Notify the application to 
-               */
-							Notification.Custom_Evt_Opcode = CUSTOM_STM_PUSH_NOTIFICATION_WRITE_NO_RESP_EVT;
-							Notification.DataTransfered.pPayload = write_perm_req->Data; 
-							Notification.DataTransfered.Length = write_perm_req->Data_Length; 
-              Custom_STM_App_Notification(&Notification);
-            /*USER CODE END CUSTOM_STM_Service_2_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
-          } /*if(write_perm_req->Attribute_Handle == (CustomContext.CustomPush_NotificationHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
-
-          /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
-
-          /* USER CODE END EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
-          break;
-        /* USER CODE BEGIN BLECORE_EVT */
-
-        /* USER CODE END BLECORE_EVT */
-        default:
-          /* USER CODE BEGIN EVT_DEFAULT */
-					//trigger = 123;
-          /* USER CODE END EVT_DEFAULT */
-          break;
-      }
-      /* USER CODE BEGIN EVT_VENDOR*/
-
-      /* USER CODE END EVT_VENDOR*/
-      break; /* HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE */
-
-      /* USER CODE BEGIN EVENT_PCKT_CASES*/
-
-      /* USER CODE END EVENT_PCKT_CASES*/
-
-    default:
-      /* USER CODE BEGIN EVENT_PCKT*/
-
-      /* USER CODE END EVENT_PCKT*/
-      break;
-  }
-
-  /* USER CODE BEGIN Custom_STM_Event_Handler_2 */
-
-  /* USER CODE END Custom_STM_Event_Handler_2 */
-
-  return(return_value);
-}/* end Custom_STM_Event_Handler */
-
-/* Public functions ----------------------------------------------------------*/
-
-/**
- * @brief  Service initialization
- * @param  None
- * @retval None
- */
-void SVCCTL_InitCustomSvc(void)
-{
-
-  Char_UUID_t  uuid;
-  /* USER CODE BEGIN SVCCTL_InitCustomSvc_1 */
-
-  /* USER CODE END SVCCTL_InitCustomSvc_1 */
-
-  /**
-   *  Register the event handler to the BLE controller
-   */
-  SVCCTL_RegisterSvcHandler(Custom_STM_Event_Handler);
-
-  /*
-   *          DVC_INFO_SVC
-   *
-   * Max_Attribute_Records = 1 + 2*2 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
-   * service_max_attribute_record = 1 for DVC_INFO_SVC +
-   *                                2 for DVC_FW_NR +
-   *                                2 for DVC_NAME +
-   *                              = 5
-   */
-
-  COPY_DVC_INFO_SVC_UUID(uuid.Char_UUID_128);
-  aci_gatt_add_service(UUID_TYPE_128,
-                       (Service_UUID_t *) &uuid,
-                       PRIMARY_SERVICE,
-                       5,
-                       &(CustomContext.CustomDvc_Info_SvcHdle));
-
-  /**
-   *  DVC_FW_NR
-   */
-  COPY_DVC_FW_NR_UUID(uuid.Char_UUID_128);
-  aci_gatt_add_char(CustomContext.CustomDvc_Info_SvcHdle,
-                    UUID_TYPE_128, &uuid,
-                    SizeDvc_Fw_Nr,
-                    CHAR_PROP_READ,
-                    ATTR_PERMISSION_NONE,
-                    GATT_DONT_NOTIFY_EVENTS,
-                    0x10,
-                    CHAR_VALUE_LEN_CONSTANT,
-                    &(CustomContext.CustomDvc_Fw_NrHdle));
-  /**
-   *  DVC_NAME
-   */
-  COPY_DVC_NAME_UUID(uuid.Char_UUID_128);
-  aci_gatt_add_char(CustomContext.CustomDvc_Info_SvcHdle,
-                    UUID_TYPE_128, &uuid,
-                    SizeDvc_Name,
-                    CHAR_PROP_READ,
-                    ATTR_PERMISSION_NONE,
-                    GATT_DONT_NOTIFY_EVENTS,
-                    0x10,
-                    CHAR_VALUE_LEN_VARIABLE,
-                    &(CustomContext.CustomDvc_NameHdle));
-
-  /*
-   *          RECEIVE_SVC
-   *
-   * Max_Attribute_Records = 1 + 2*2 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
-   * service_max_attribute_record = 1 for RECEIVE_SVC +
-   *                                2 for TIME_UPDATE +
-   *                                2 for PUSH_NOTIFICATION +
-   *                              = 5
-   */
-
-  COPY_RECEIVE_SVC_UUID(uuid.Char_UUID_128);
-  aci_gatt_add_service(UUID_TYPE_128,
-                       (Service_UUID_t *) &uuid,
-                       PRIMARY_SERVICE,
-                       5,
-                       &(CustomContext.CustomReceive_SvcHdle));
-
-  /**
-   *  TIME_UPDATE
-   */
-  COPY_TIME_UPDATE_UUID(uuid.Char_UUID_128);
-  aci_gatt_add_char(CustomContext.CustomReceive_SvcHdle,
-                    UUID_TYPE_128, &uuid,
-                    SizeTime_Update,
-                    CHAR_PROP_WRITE_WITHOUT_RESP,
-                    ATTR_PERMISSION_NONE,
-                    GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
-                    0x10,
-                    CHAR_VALUE_LEN_VARIABLE,
-                    &(CustomContext.CustomTime_UpdateHdle));
-  /**
-   *  PUSH_NOTIFICATION
-   */
-  COPY_PUSH_NOTIFICATION_UUID(uuid.Char_UUID_128);
-  aci_gatt_add_char(CustomContext.CustomReceive_SvcHdle,
-                    UUID_TYPE_128, &uuid,
-                    SizePush_Notification,
-                    CHAR_PROP_WRITE_WITHOUT_RESP,
-                    ATTR_PERMISSION_NONE,
-                    GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
-                    0x10,
-                    CHAR_VALUE_LEN_VARIABLE,
-                    &(CustomContext.CustomPush_NotificationHdle));
-
-  /* USER CODE BEGIN SVCCTL_InitCustomSvc_2 */
-
-  /* USER CODE END SVCCTL_InitCustomSvc_2 */
-
-  return;
+static uint16_t info_svc, receive_svc, fw_char, name_char, time_char, push_char, boot_char, diag_char;
+static uint16_t ota_svc, begin_char, data_char, end_char;
+#ifdef SMARTGLASSES_BOOTLOADER
+void Glasses_OtaWrite(uint8_t kind, uint16_t conn, uint16_t attr, const uint8_t *data, uint8_t len);
+#endif
+extern uint32_t glasses_fault[3], glasses_reset_flags;
+static void uuid(uint8_t *out, uint32_t id, bool service) {
+    static const uint8_t characteristic[] = {0x19,0xED,0x82,0xAE,0xED,0x21,0x4C,0x9D,0x41,0x45,0x22,0x8E};
+    static const uint8_t svc[] = {0x8F,0xE5,0xB3,0xD5,0x2E,0x7F,0x4A,0x98,0x2A,0x48,0x7A,0xCC};
+    memcpy(out, service ? svc : characteristic, 12);
+    out[12] = (uint8_t)id; out[13] = (uint8_t)(id >> 8);
+    out[14] = (uint8_t)(id >> 16); out[15] = (uint8_t)(id >> 24);
 }
-
-/**
- * @brief  Characteristic update
- * @param  CharOpcode: Characteristic identifier
- * @param  Service_Instance: Instance of the service to which the characteristic belongs
- *
- */
-tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8_t *pPayload)
-{
-  tBleStatus result = BLE_STATUS_INVALID_PARAMS;
-  /* USER CODE BEGIN Custom_STM_App_Update_Char_1 */
-
-  /* USER CODE END Custom_STM_App_Update_Char_1 */
-
-  switch(CharOpcode)
-  {
-
-    case CUSTOM_STM_DVC_FW_NR:
-      result = aci_gatt_update_char_value(CustomContext.CustomDvc_Info_SvcHdle,
-                                          CustomContext.CustomDvc_Fw_NrHdle,
-                                          0, /* charValOffset */
-                                          SizeDvc_Fw_Nr, /* charValueLen */
-                                          (uint8_t *)  pPayload);
-      /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_1*/
-
-      /* USER CODE END CUSTOM_STM_Service_1_Char_1*/
-      break;
-
-    case CUSTOM_STM_DVC_NAME:
-      result = aci_gatt_update_char_value(CustomContext.CustomDvc_Info_SvcHdle,
-                                          CustomContext.CustomDvc_NameHdle,
-                                          0, /* charValOffset */
-                                          SizeDvc_Name, /* charValueLen */
-                                          (uint8_t *)  pPayload);
-      /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_2*/
-
-      /* USER CODE END CUSTOM_STM_Service_1_Char_2*/
-      break;
-
-    case CUSTOM_STM_TIME_UPDATE:
-      result = aci_gatt_update_char_value(CustomContext.CustomReceive_SvcHdle,
-                                          CustomContext.CustomTime_UpdateHdle,
-                                          0, /* charValOffset */
-                                          SizeTime_Update, /* charValueLen */
-                                          (uint8_t *)  pPayload);
-      /* USER CODE BEGIN CUSTOM_STM_Service_2_Char_1*/
-
-      /* USER CODE END CUSTOM_STM_Service_2_Char_1*/
-      break;
-
-    case CUSTOM_STM_PUSH_NOTIFICATION:
-      result = aci_gatt_update_char_value(CustomContext.CustomReceive_SvcHdle,
-                                          CustomContext.CustomPush_NotificationHdle,
-                                          0, /* charValOffset */
-                                          SizePush_Notification, /* charValueLen */
-                                          (uint8_t *)  pPayload);
-      /* USER CODE BEGIN CUSTOM_STM_Service_2_Char_2*/
-
-      /* USER CODE END CUSTOM_STM_Service_2_Char_2*/
-      break;
-
-    default:
-      break;
-  }
-
-  /* USER CODE BEGIN Custom_STM_App_Update_Char_2 */
-
-  /* USER CODE END Custom_STM_App_Update_Char_2 */
-
-  return result;
+static void check(tBleStatus status) { if (status != BLE_STATUS_SUCCESS) Glasses_Fatal(10); }
+static void add(uint16_t svc, uint32_t id, uint8_t len, bool write, bool protected_read, uint16_t *handle) {
+    Char_UUID_t u;
+    uuid(u.Char_UUID_128, id, false);
+    check(aci_gatt_add_char(svc, UUID_TYPE_128, &u, len,
+        write ? CHAR_PROP_WRITE : CHAR_PROP_READ,
+        write ? ATTR_PERMISSION_AUTHEN_WRITE | ATTR_PERMISSION_ENCRY_WRITE :
+        protected_read ? ATTR_PERMISSION_AUTHEN_READ | ATTR_PERMISSION_ENCRY_READ : ATTR_PERMISSION_NONE,
+        write ? GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP :
+        protected_read ? GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP : GATT_DONT_NOTIFY_EVENTS,
+        16, CHAR_VALUE_LEN_VARIABLE, handle));
+}
+static SVCCTL_EvtAckStatus_t handler(void *packet) {
+    hci_event_pckt *evt = (hci_event_pckt *)((hci_uart_pckt *)packet)->data;
+    evt_blecore_aci *vendor;
+    if (evt->evt != HCI_VENDOR_SPECIFIC_DEBUG_EVT_CODE) return SVCCTL_EvtNotAck;
+    vendor = (evt_blecore_aci *)evt->data;
+    if (vendor->ecode == ACI_GATT_READ_PERMIT_REQ_VSEVT_CODE) {
+        aci_gatt_read_permit_req_event_rp0 *read = (void *)vendor->data;
+        if (read->Attribute_Handle == diag_char + 1) {
+            uint32_t diagnostic[5] = {glasses_reset_flags, glasses_fault[0] == 0x53474631 ? glasses_fault[1] : 0,
+                glasses_rx.rejected, glasses_rx.dropped, glasses_rx.truncated};
+            aci_gatt_update_char_value(info_svc, diag_char, 0, sizeof(diagnostic), (uint8_t *)diagnostic);
+            aci_gatt_allow_read(read->Connection_Handle); return SVCCTL_EvtAckFlowEnable;
+        }
+    } else if (vendor->ecode == ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE) {
+        aci_gatt_write_permit_req_event_rp0 *w = (void *)vendor->data;
+        uint8_t error = 0;
+#ifdef SMARTGLASSES_BOOTLOADER
+        if (w->Attribute_Handle == begin_char + 1 || w->Attribute_Handle == data_char + 1 || w->Attribute_Handle == end_char + 1) {
+            Glasses_OtaWrite(w->Attribute_Handle == begin_char + 1 ? 1 : w->Attribute_Handle == data_char + 1 ? 2 : 3,
+                            w->Connection_Handle, w->Attribute_Handle, w->Data, w->Data_Length);
+            return SVCCTL_EvtAckFlowEnable;
+        }
+#endif
+        if (w->Attribute_Handle == boot_char + 1) {
+            if (w->Data_Length != 4 || memcmp(w->Data, "OTA1", 4)) error = 0x0D;
+            else Glasses_RequestOta();
+        } else if (w->Attribute_Handle == time_char + 1) {
+#ifdef SMARTGLASSES_BOOTLOADER
+            error = 0x03;
+#else
+            if (!glasses_clock_set(&glasses_clock, w->Data, w->Data_Length, HAL_GetTick())) error = 0x0D;
+#endif
+        } else if (w->Attribute_Handle == push_char + 1) {
+#ifdef SMARTGLASSES_BOOTLOADER
+            error = 0x03;
+#else
+            if (!glasses_rx_push(&glasses_rx, w->Data, w->Data_Length, HAL_GetTick())) error = 0x0D;
+#endif
+        } else if (w->Attribute_Handle == begin_char + 1 || w->Attribute_Handle == data_char + 1 || w->Attribute_Handle == end_char + 1) error = 0x03;
+        else return SVCCTL_EvtNotAck;
+        aci_gatt_write_resp(w->Connection_Handle, w->Attribute_Handle, error != 0, error,
+                            error ? 0 : w->Data_Length, w->Data);
+        return SVCCTL_EvtAckFlowEnable;
+    }
+    return SVCCTL_EvtNotAck;
+}
+void SVCCTL_InitCustomSvc(void) {
+    Service_UUID_t s;
+    uint8_t version[4] = {0,2,0,0};
+    uint8_t name[] = "Smartglasses";
+#ifdef SMARTGLASSES_BOOTLOADER
+    version[3] = 1;
+#endif
+    SVCCTL_RegisterSvcHandler(handler);
+    uuid(s.Service_UUID_128, 0x10, true);
+    check(aci_gatt_add_service(UUID_TYPE_128, &s, PRIMARY_SERVICE, 7, &info_svc));
+    add(info_svc, 0x11, 4, false, false, &fw_char);
+    add(info_svc, 0x12, 32, false, false, &name_char);
+    add(info_svc, 0x13, 20, false, true, &diag_char);
+    check(aci_gatt_update_char_value(info_svc, fw_char, 0, sizeof(version), version));
+    check(aci_gatt_update_char_value(info_svc, name_char, 0, sizeof(name) - 1, name));
+    uuid(s.Service_UUID_128, 0x20, true);
+    check(aci_gatt_add_service(UUID_TYPE_128, &s, PRIMARY_SERVICE, 7, &receive_svc));
+    add(receive_svc, 0x21, 12, true, false, &time_char);
+    add(receive_svc, 0x22, 20, true, false, &push_char);
+    add(receive_svc, 0x23, 4, true, false, &boot_char);
+    /* OTA uses its own service, distinct from ST's unmodified BLE_Ota protocol. */
+    uuid(s.Service_UUID_128, 0xFE20, true);
+    check(aci_gatt_add_service(UUID_TYPE_128, &s, PRIMARY_SERVICE, 7, &ota_svc));
+    add(ota_svc, 0xFE21, 12, true, false, &begin_char);
+    add(ota_svc, 0xFE22, 20, true, false, &data_char);
+    add(ota_svc, 0xFE23, 4, true, false, &end_char);
+}
+tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t kind, uint8_t *p) {
+    if (kind == CUSTOM_STM_DVC_FW_NR) return aci_gatt_update_char_value(info_svc, fw_char, 0, 4, p);
+    if (kind == CUSTOM_STM_DVC_NAME) return aci_gatt_update_char_value(info_svc, name_char, 0, 32, p);
+    return BLE_STATUS_INVALID_PARAMS;
 }

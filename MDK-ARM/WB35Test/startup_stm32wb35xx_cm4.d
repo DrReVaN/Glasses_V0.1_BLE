@@ -1,1 +1,0 @@
-wb35test\startup_stm32wb35xx_cm4.o: startup_stm32wb35xx_cm4.s

@@ -1,0 +1,14 @@
+/build/
+/MDK-ARM/build-*/
+*.o
+*.crf
+*.d
+*.axf
+*.map
+*.lnp
+*.lst
+*.build_log.htm
+*.uvguix.*
+__pycache__/
+*.pyc
+.venv/

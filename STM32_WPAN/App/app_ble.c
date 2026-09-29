@@ -27,6 +27,8 @@
 #include "ble.h"
 #include "tl.h"
 #include "app_ble.h"
+#include "glasses_app.h"
+#include "glasses_ota.h"
 
 #include "stm32_seq.h"
 #include "shci.h"
@@ -189,20 +191,18 @@ static uint8_t bd_addr_udn[BD_ADDR_SIZE_LOCAL];
 /**
 *   Identity root key used to derive LTK and CSRK
 */
-static const uint8_t BLE_CFG_IR_VALUE[16] = CFG_BLE_IRK;
+static uint8_t BLE_CFG_IR_VALUE[16];
 
 /**
 * Encryption root key used to derive LTK and CSRK
 */
-static const uint8_t BLE_CFG_ER_VALUE[16] = CFG_BLE_ERK;
+static uint8_t BLE_CFG_ER_VALUE[16];
 
 /**
  * These are the two tags used to manage a power failure during OTA
  * The MagicKeywordAdress shall be mapped @0x140 from start of the binary image
  * The MagicKeywordvalue is checked in the ble_ota application
  */
-PLACE_IN_SECTION("TAG_OTA_END") const uint32_t MagicKeywordValue = 0x94448A29 ;
-PLACE_IN_SECTION("TAG_OTA_START") const uint32_t MagicKeywordAddress = (uint32_t)&MagicKeywordValue;
 
 PLACE_IN_SECTION("BLE_APP_CONTEXT") static BleApplicationContext_t BleApplicationContext;
 
@@ -512,18 +512,22 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification( void *pckt )
         break;
 
         case ACI_GAP_PASS_KEY_REQ_VSEVT_CODE:
-            aci_gap_pass_key_resp(BleApplicationContext.BleApplicationContext_legacy.connectionHandle, CFG_FIXED_PIN);
+            /* Legacy fixed-passkey pairing is deliberately unsupported. */
+            aci_gap_terminate(BleApplicationContext.BleApplicationContext_legacy.connectionHandle, 0x05);
         break;
 
         case ACI_GAP_NUMERIC_COMPARISON_VALUE_VSEVT_CODE:
             evt_numeric_value = (aci_gap_numeric_comparison_value_event_rp0 *)blecore_evt->data;
             numeric_value = evt_numeric_value->Numeric_Value;
             APP_DBG_MSG("numeric_value = %ld\n", numeric_value);
-            aci_gap_numeric_comparison_value_confirm_yesno(BleApplicationContext.BleApplicationContext_legacy.connectionHandle, YES);
+            if (!Glasses_PairingRequest(evt_numeric_value->Connection_Handle, numeric_value))
+              aci_gap_numeric_comparison_value_confirm_yesno(evt_numeric_value->Connection_Handle, NO);
         break;
 
         case ACI_GAP_PAIRING_COMPLETE_VSEVT_CODE:
             pairing_complete = (aci_gap_pairing_complete_event_rp0*)blecore_evt->data;
+            Glasses_PairingDone();
+            (void)pairing_complete;
             APP_DBG_MSG("BLE_CTRL_App_Notification: ACI_GAP_PAIRING_COMPLETE_VSEVT_CODE, pairing_complete->Status = %d\n",pairing_complete->Status);
         break;
         /* PAIRING */
@@ -645,6 +649,7 @@ static void Ble_Hci_Gap_Gatt_Init(void){
   /**
    * Write Identity root key used to derive LTK and CSRK
    */
+  Glasses_SecurityKeys(BLE_CFG_IR_VALUE, BLE_CFG_ER_VALUE);
   aci_hal_write_config_data( CONFIG_DATA_IR_OFFSET, CONFIG_DATA_IR_LEN, (uint8_t*)BLE_CFG_IR_VALUE );
 
   /**

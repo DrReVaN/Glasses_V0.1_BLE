@@ -55,11 +55,11 @@
 /**
  * Define IO Authentication
  */
-#define CFG_BONDING_MODE                 (0)
-#define CFG_FIXED_PIN                    (111111)
+#define CFG_BONDING_MODE                 (1)
+#define CFG_FIXED_PIN                    (0)
 #define CFG_USED_FIXED_PIN               (0)
 #define CFG_ENCRYPTION_KEY_SIZE_MAX      (16)
-#define CFG_ENCRYPTION_KEY_SIZE_MIN      (8)
+#define CFG_ENCRYPTION_KEY_SIZE_MIN      (16)
 
 /**
  * Define IO capabilities
@@ -87,7 +87,7 @@
 #define CFG_SECURE_OPTIONAL            (0x01)
 #define CFG_SECURE_MANDATORY           (0x02)
 
-#define CFG_SC_SUPPORT                 CFG_SECURE_OPTIONAL
+#define CFG_SC_SUPPORT                 CFG_SECURE_MANDATORY
 
 /**
  * Define Keypress Notification Support
@@ -106,7 +106,7 @@
 /**
  * Device name configuration for Generic Access Service
  */
-#define CFG_GAP_DEVICE_NAME             "TEMPLATE"
+#define CFG_GAP_DEVICE_NAME             "SMRT_GLS"
 #define CFG_GAP_DEVICE_NAME_LENGTH      (8)
 
 /**
@@ -123,12 +123,10 @@
 /**
 *   Identity root key used to derive LTK and CSRK
 */
-#define CFG_BLE_IRK     {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0}
 
 /**
 * Encryption root key used to derive LTK and CSRK
 */
-#define CFG_BLE_ERK     {0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21, 0xFE, 0xDC, 0xBA, 0x09, 0x87, 0x65, 0x43, 0x21}
 
 /**
  * SMPS supply
@@ -177,7 +175,7 @@
  * Maximum number of simultaneous connections that the device will support.
  * Valid values are from 1 to 8
  */
-#define CFG_BLE_NUM_LINK            2
+#define CFG_BLE_NUM_LINK            1
 
 /**
  * Maximum number of Services that can be stored in the GATT database.
@@ -385,7 +383,7 @@
  ******************************************************************************/
 /**
  *  When set to 1, the low power mode is enable
- *  When set to 0, the device stays in RUN mode
+ *  When set to 0, automatic Stop/Standby is disabled; foreground uses CPU1 Sleep with SysTick running
  */
 #define CFG_LPM_SUPPORTED    0
 

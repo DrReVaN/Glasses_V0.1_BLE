@@ -21,11 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "STM32_Cap1203.h"
-#include "ssd1306.h"
-#include "ssd1306_conf_template.h"
-#include "ssd1306_fonts.h"
-#include "ble.h"
+#include "glasses_app.h"
+#include "glasses_ota.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,7 +32,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define filterwert 4
 
 /* USER CODE END PD */
 
@@ -57,45 +53,6 @@ TIM_HandleTypeDef htim1;
 
 /* USER CODE BEGIN PV */
 
-uint8_t cs_value[3] = {0,0,0};
-uint8_t cs_oldvalue = 0;
-int8_t page = 3;
-uint8_t oled_off_merker = 1; //bedeutet Oled ist off
-uint8_t newMessage = 0;
-
-//osMessageQueueId_t data_msg;
-uint8_t bleConnected = 0;
-uint8_t EventFlag = 0;
-uint8_t EventFlagOledOff = 0;
-uint32_t oledOffCounter = 0;
-uint8_t activindicator = 1;
-uint32_t touchcounterCS1 = 0;
-uint32_t touchcounterCS2 = 0;
-uint32_t touchcounterCS3 = 0;
-uint8_t scrolltimer = 0;
-
-uint8_t textIndex = 0;
-
-int8_t pagemerker = 0;
-uint8_t powerOff = 0;
-
-uint8_t wasPressed = 0;
-//osThreadId_t id_data_sync;
-
-int cs_state =0;
-
-uint16_t touchDeBounce = 0;
-
-uint8_t cs_val[filterwert] = {0};
-char text[128] = {0};
-char tempText[5] = {0};
-//uint8_t max_sign = 6;
-int cursor = 0;
-char time[4] = {0};
-char date[4] = {0};
-uint32_t counter = 0;
-uint32_t displayRefreshCounter = 0;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -110,15 +67,6 @@ static void MX_SPI1_Init(void);
 static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
-void thread_oled_data(); 
-void timeupdate();
-void touchhelper();
-void pageclickhelper();
-void thread_touchdetection();
-void thread_pageclick();
-void thread_oled_auto_off();
-
-	
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -144,10 +92,8 @@ int main(void)
   MX_APPE_Config();
 
   /* USER CODE BEGIN Init */
-	
-	//SystemClock_Config() macht ein Problem sobald RTC aktiviert ist HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK -> HAL_TIMEOUT
-	
-  /* USER CODE END Init */
+  Glasses_WatchdogInit();
+/* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
@@ -170,45 +116,11 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-
-	LL_C2_PWR_SetPowerMode(LL_PWR_MODE_SHUTDOWN);
-  if(   (__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
-     && (__HAL_PWR_GET_FLAG(PWR_FLAG_C2SB) != RESET)
-    )
-  {
-    // Clear Standby flag 
-		
-    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB); 
-    __HAL_PWR_CLEAR_FLAG(PWR_FLAG_C2SB);
-		HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
-  }
-	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-	
-	HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
-	
-	
-	
-	CAP1203_Init(hi2c1);
-	//CAP1203_Int_Clr();
-	//Falls Probleme, in Datei hw_timerserver.c Line 565 auskommentieren , Keine Ahung warum....
-	CAP1203_Exit_PWR();
-	CAP1203_Set_Standby_CS(ALL_CS_ENB);
-	CAP1203_Set_Standby_Sensitivity(SENSITIVITY_8X);
-	CAP1203_Go_Standby(CYCLETIME_70ms); 
-	//CAP1203_Set_Sensitivity(SENSITIVITY_32X);
-	
-	
-//	 HAL_GPIO_WritePin(OLED_PWR_GPIO_Port, OLED_PWR_Pin, GPIO_PIN_SET);
-//	 osDelay(5);
-//	ssd1306_Init();
-//	ssd1306_SetContrast(50);
-	//HAL_TIM_Base_Start_IT(&htim1); 
-	TIM1->CCR3 = 0; 
-	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-
-	EventFlag = 2;
-	
-  /* USER CODE END 2 */
+#ifdef SMARTGLASSES_BOOTLOADER
+  Glasses_BootTryApplication();
+#endif
+  Glasses_Init();
+/* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
   MX_APPE_Init();
@@ -220,14 +132,11 @@ int main(void)
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
-		
-		thread_oled_data();
-		thread_touchdetection();
-		thread_pageclick();
-		thread_oled_auto_off();
-		
+    Glasses_Process();
+    Glasses_OtaProcess();
+    __WFI(); /* CPU1 sleep at the existing clock; CPU2 continues BLE. SysTick stays on. */
   }
-  /* USER CODE END 3 */
+/* USER CODE END 3 */
 }
 
 /**
@@ -427,12 +336,7 @@ static void MX_RTC_Init(void)
   {
     Error_Handler();
   }
-  /** Enable the WakeUp
-  */
-  if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  /* The ST timer server owns WUTE; do not start interrupts before HW_TS_Init. */
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
@@ -586,7 +490,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : CAP1203_INT_Pin */
   GPIO_InitStruct.Pin = CAP1203_INT_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(CAP1203_INT_GPIO_Port, &GPIO_InitStruct);
 
@@ -612,419 +516,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-void thread_touchdetection(){
-
-	if(EventFlag == 1){
-		/*int8_t page_merker = page;
-		uint8_t cs_merker = 0;
-		cs_value = CAP1203_Get_CS_State() & 7;
-		
-		for(int i = filterwert -1 ; i > 0; i--){
-			cs_val[i] = cs_val[i-1];
-		}
-		cs_val[0] = cs_value;
-		
-		for(int i = 0; i <= filterwert; i++){
-				cs_merker += cs_val[i];
-		}
-		if(cs_merker == (cs_value * filterwert)){ 
-				EventFlag = 4;
-		}
-			
-		if (cs_value != 0) cs_oldvalue = cs_value;
-	
-		cs_value = 0;
-		//if(osTimerIsRunning(touchhelper) == 0) osTimerStart(touchhelper, 400);
-		//if(osTimerIsRunning(pageclickhelper) == 0) osTimerStart(pageclickhelper, filterwert *250);
-		
-//		if(page >3)page = 0;
-//		if(page <0)page = 3;
-		
-		if((page != page_merker) ||oled_off_merker) EventFlag = 2;
-		
-		HAL_Delay(200);
-		CAP1203_Int_Clr();
-		EventFlag = 2; */
-		
-			if(page == 3) {
-				CAP1203_Int_Clr();
-				cs_value[1] = CAP1203_Get_CS2_State();
-			
-				if(cs_value[1] == ON) {
-					touchcounterCS2++;
-					if(touchcounterCS2>3000) {
-								page = 0;
-								EventFlag = 4;
-								touchcounterCS2 = 0; 
-							}
-				} else {
-					touchcounterCS2 = 0;
-				}
-			}
-			else {
-		
-				CAP1203_Int_Clr();
-				
-				cs_value[0] = CAP1203_Get_CS1_State();
-				cs_value[1] = CAP1203_Get_CS2_State();
-				cs_value[2] = CAP1203_Get_CS3_State();
-				
-				if(cs_value[0] == ON) {
-					touchcounterCS1++;
-				} else {
-					touchcounterCS1 = 0;
-				}
-				
-				if(cs_value[1] == ON) {
-					touchcounterCS2++;
-				} else {
-					touchcounterCS2 = 0;
-				}
-				
-				if(cs_value[2] == ON) {
-					touchcounterCS3++;
-				} else {
-					touchcounterCS3 = 0;
-				}
-				
-				if(wasPressed == 0) {
-					
-					if(oled_off_merker) {
-						if(cs_value[0] == ON || cs_value[1] == ON || cs_value[2] == ON) {
-							page = pagemerker;
-							EventFlag = 2;
-							wasPressed = 1;
-						}
-					}
-					else { 
-						
-						if(cs_value[0] == ON || cs_value[1] == ON || cs_value[2] == ON) {
-							wasPressed = 1;
-						}
-						
-						if(cs_value[0] == ON) {
-								if(touchcounterCS1>2000) {
-									page = 0;
-									EventFlag = 2;
-									touchcounterCS2 = 0; 
-								}
-						}
-						else if(cs_value[1] == ON) {
-								if(touchcounterCS2>3000) {
-									page = 0;
-									EventFlag = 4;
-									touchcounterCS2 = 0; 
-								}
-						}
-						else if(cs_value[2] == ON) {
-							if(touchcounterCS3>1000) {
-								page = 1;
-								EventFlag = 2;
-								touchcounterCS3 = 0; 
-							}
-						}
-					}	
-					touchDeBounce = 0;
-				} 
-				
-				if(wasPressed == 1) {
-					touchDeBounce++;
-				}
-				if(touchDeBounce >300) {
-					wasPressed = 0;
-				}
-			}
-			displayRefreshCounter++;
-			
-			if(displayRefreshCounter > 2000 && oled_off_merker != 1 && page != 2) { 	
-				EventFlag = 2;
-				displayRefreshCounter = 0;
-			} 
-			else if(displayRefreshCounter > 1250 && page == 2) {			//Microcontroller resettet wenn man eine höhere Refreshrate nimmt, keine Ahnung warum; max 1200
-				EventFlag = 2;
-				displayRefreshCounter = 0;
-			} 
-			
-			if(powerOff == 2) {
-				CAP1203_Exit_PWR();
-				CAP1203_Set_Standby_CS(ALL_CS_ENB);
-				CAP1203_Set_Standby_Sensitivity(SENSITIVITY_8X);
-				CAP1203_Go_Standby(CYCLETIME_70ms);
-				
-				LL_PWR_ExitLowPowerRunMode();
-				
-				EventFlag = 2;
-				page = 5;
-				powerOff = 0;
-			}
-			
-			/*cs_value[0] = 0;
-			cs_value[1] = 0;
-			cs_value[2] = 0;*/
-	
-	} 	
-}
-
-void thread_oled_data(){
-		//osTimerStart(timeupdate, 60000); //Timer zum aktualisieren der Uhrzeit starten
-	
-	if(EventFlag == 2) {
-		if(oled_off_merker){
-			HAL_GPIO_WritePin(OLED_PWR_GPIO_Port, OLED_PWR_Pin, GPIO_PIN_SET);
-			HAL_Delay(100);
-			ssd1306_Init();
-			ssd1306_SetContrast(50);
-			oled_off_merker = 0;
-		}
-
-		if(EventFlagOledOff != 8) {		//Oled Auto Off
-			EventFlagOledOff = 8;
-		}
-		
-		switch(page){
-			case 1:
-				ssd1306_Fill(Black);
-				ssd1306_UpdateScreen();	
-				ssd1306_SetCursor(9, 61);
-				ssd1306_WriteString((char *)"Msg", Font_7x10, White);
-				ssd1306_UpdateScreen();
-				
-				cursor = 14;					
-			
-				for(int i=0;i<5;i++) {
-					tempText[i] = text[i];
-				}
-				
-				if(newMessage) {
-					TIM1->CCR3 = 50;
-					HAL_Delay(100);
-					TIM1->CCR3 = 0;
-					HAL_Delay(900);
-					
-					
-				}	else {
-					HAL_Delay(1000);
-				}
-				newMessage = 0;
-				page = 2;
-			break;
-			case 2:
-
-				EventFlagOledOff = 0;
-				oledOffCounter = 0;
-				ssd1306_Fill(Black);
-				ssd1306_UpdateScreen();
-				ssd1306_SetCursor(cursor, 61);
-				ssd1306_WriteChar(tempText[0], Font_7x10, White);
-				ssd1306_WriteChar(tempText[1], Font_7x10, White);
-				ssd1306_WriteChar(tempText[2], Font_7x10, White);
-				ssd1306_WriteChar(tempText[3], Font_7x10, White);
-				ssd1306_WriteChar(tempText[4], Font_7x10, White);
-				ssd1306_UpdateScreen();
-				
-				cursor-=7;
-				if(cursor<0) {
-					if(tempText[0] == 0) {
-						page = 0;
-						counter = 0;
-						cursor = 14;
-					}
-					else {
-						counter++;
-						for(int i=0;i<4;i++) {
-							tempText[i] = tempText[i+1];
-						}
-						tempText[4] = text[counter+4];
-						cursor = 0;
-					}
-				}
-				EventFlag = 1;
-			
-			break;
-			case 3:
-				
-				ssd1306_Fill(Black);
-				ssd1306_UpdateScreen();	
-				ssd1306_SetCursor(7, 66); //8x64
-				ssd1306_WriteString((char *)"Wait", Font_7x10, White);
-				ssd1306_SetCursor(10, 56); //11x52
-				ssd1306_WriteString((char *)"BLE", Font_7x10, White);
-				ssd1306_UpdateScreen();
-				
-				EventFlagOledOff = 8;
-				oledOffCounter = 0;
-				
-			
-				/*if(EventFlagOledOff != 8 && EventFlagOledOff == 0) {		//Oled Auto Off
-					EventFlagOledOff = 7;
-				}*/
-				HAL_Delay(500);
-				EventFlag = 1;
-			
-			break;
-			case 4:
-				ssd1306_Fill(Black);
-				ssd1306_UpdateScreen();	
-				ssd1306_SetCursor(7, 66);
-				ssd1306_WriteString((char *)"Done", Font_7x10, White);
-				ssd1306_SetCursor(10, 56);
-				ssd1306_WriteString((char *)"BLE", Font_7x10, White);
-				ssd1306_UpdateScreen();
-			
-				HAL_Delay(2000);
-				page = 0;
-				//EventFlag = 2; //Set 8+2 8 für auto display off und 2 zum display aktualisieren
-			break;
-			case 5:
-				ssd1306_Fill(Black);
-				ssd1306_UpdateScreen();	
-				ssd1306_SetCursor(11, 62);
-				ssd1306_WriteString((char *)"ON", Font_7x10, White);
-				ssd1306_UpdateScreen();
-
-				HAL_Delay(2000);
-				if(bleConnected) {
-					page = 0;
-				} else {
-					page = 3;
-				}
-				break;
-			default:
-				
-				ssd1306_Fill(Black);
-				ssd1306_UpdateScreen();	
-				//time
-				ssd1306_SetCursor(6, 58); //8x64
-				ssd1306_WriteChar(time[0], Font_6x8, White);
-				ssd1306_WriteChar(time[1], Font_6x8, White);
-				ssd1306_SetCursor(17, 58); //8x64
-				ssd1306_WriteChar(':', Font_6x8, White);
-				ssd1306_SetCursor(21, 58); //8x64
-				ssd1306_WriteChar(time[2], Font_6x8, White);
-				ssd1306_WriteChar(time[3], Font_6x8, White);
-				//date
-				ssd1306_SetCursor(6, 66); //8x64
-				ssd1306_WriteChar(date[0], Font_6x8, White);
-				ssd1306_WriteChar(date[1], Font_6x8, White);
-				ssd1306_SetCursor(17, 66); //8x64
-				ssd1306_WriteChar('.', Font_6x8, White);
-				ssd1306_SetCursor(21, 66); //8x64
-				ssd1306_WriteChar(date[2], Font_6x8, White);
-				ssd1306_WriteChar(date[3], Font_6x8, White);
-				ssd1306_UpdateScreen();
-				EventFlag = 1;
-				
-				
-	
-			break;			
-		}
-	}
-}
-
-void thread_oled_auto_off(void* arg){
-		
-	if(oledOffCounter > 0) {
-		oledOffCounter++;
-	}
-	
-	if(EventFlagOledOff == 8 && oledOffCounter == 0) {
-		oledOffCounter = 1;
-		activindicator = EventFlag;
-	}
-	/*else if(EventFlagOledOff == 7 && oledOffCounter == 0) {
-		oledOffCounter = 1;
-		activindicator = EventFlag;
-	}*/
-
-	if(!(activindicator & 8) && oledOffCounter > 25000 && !oled_off_merker) {
-		ssd1306_SetDisplayOn(0);
-		HAL_Delay(3);
-		HAL_GPIO_WritePin(OLED_PWR_GPIO_Port, OLED_PWR_Pin, GPIO_PIN_RESET);
-		oled_off_merker = 1;
-		pagemerker = page;
-		page = 0;
-		activindicator = 0;
-		oledOffCounter = 0;
-		EventFlagOledOff = 0;
-		//osTimerStop(messageroll);
-	} 
-}
-
-void thread_pageclick(){
-	if(EventFlag == 4){
-		
-		switch(page){
-			case 0:
-			CAP1203_Set_Standby_CS(CS2_ENB);
-			CAP1203_Set_PWR_CS(PWR_CS2);
-			CAP1203_Set_PWR_Time(PWR_TIME_2240_MS);
-			CAP1203_Go_PWR();
-			//CAP1203_Int_Clr();
-			
-			ssd1306_Fill(Black);
-			ssd1306_SetCursor(11, 62);
-			ssd1306_WriteString((char *)"OFF", Font_7x10, White);
-			ssd1306_UpdateScreen();
-			
-			oled_off_merker = 1;
-			oledOffCounter = 0;
-			EventFlagOledOff = 0;
-//			HAL_NVIC_DisableIRQ(EXTI3_IRQn);
-//			osThreadSuspend(id_data_sync);
-//			osThreadSuspend(id_oled_data);
-//			osThreadSuspend(id_touchdetection);
-			powerOff = 1;
-			CAP1203_Int_Clr();
-			HAL_Delay(2000);	
-			//ssd1306_Fill(Black);
-			//ssd1306_UpdateScreen();
-			ssd1306_SetDisplayOn(0);
-			HAL_Delay(3);
-			
-			HAL_GPIO_WritePin(OLED_PWR_GPIO_Port, OLED_PWR_Pin, GPIO_PIN_RESET);
-			
-			LL_PWR_EnterLowPowerRunMode();
-//			osKernelSuspend();
-//			
-//			LL_C2_PWR_EnableWakeUpPin(LL_PWR_WAKEUP_PIN1);
-//			LL_PWR_IsEnabledWakeUpPin(LL_PWR_WAKEUP_PIN1);
-//			LL_PWR_SetWakeUpPinPolarityLow(LL_PWR_WAKEUP_PIN1);
-//			
-//			loeschen = LL_PWR_IsWakeUpPinPolarityLow(LL_PWR_WAKEUP_PIN1);
-			/*HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1_LOW);
-			HAL_SuspendTick();
-			HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFE); */
-			
-			
-			
-			/*if(   (LL_PWR_IsActiveFlag_C1SB() == 0) || (LL_PWR_IsActiveFlag_C2SB() == 0)) {
-				// Set the lowest low-power mode for CPU2: shutdown mode 
-				LL_C2_PWR_SetPowerMode(LL_PWR_MODE_STANDBY);
-			}
-			__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-			HAL_PWR_EnterSTANDBYMode(); */
-			break;
-			
-			default:
-				//nothing
-			break;
-		}	
-	} 
-}
-
-void touchhelper() {
-	cs_oldvalue = 0;
-	//HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4, GPIO_PIN_RESET);  
-}
-void pageclickhelper() {
-	for(int i = 0; i <= filterwert; i++){
-	cs_val[i] = 0;
-	}
-}
-
-void timeupdate() {
-	//add RTC implementation
-}
 /* USER CODE END 4 */
 
 /**
@@ -1034,12 +525,8 @@ void timeupdate() {
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL EventFlag return state */
-  __disable_irq();
-  while (1)
-  {
-  }
-  /* USER CODE END Error_Handler_Debug */
+  Glasses_Fatal(1);
+/* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT

@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_common.h"
+#include "main.h"
 #include "hw_conf.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -562,7 +563,12 @@ void HW_TS_RTC_Wakeup_Handler(void)
      * However, if due to any bug in the timer server this is the case, the mistake may not impact the user.
      * We could just clean the interrupt flag and get out from this unexpected interrupt
      */
-    //while(__HAL_RTC_WAKEUPTIMER_GET_FLAG(phrtc, RTC_FLAG_WUTWF) == RESET);
+    /* IRQ context: SysTick may be masked, so use a bounded cycle count.
+     * The hardware watchdog also covers a stopped RTC clock. */
+    uint32_t ready_budget = SystemCoreClock / 100u;
+    while (__HAL_RTC_WAKEUPTIMER_GET_FLAG(phrtc, RTC_FLAG_WUTWF) == RESET) {
+      if (--ready_budget == 0) { Error_Handler(); }
+    }
 
     /**
      * make sure to clear the flags after checking the WUTWF.
