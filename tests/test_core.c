@@ -39,7 +39,9 @@ static void receiver(void) {
     packet[2]='A';packet[3]=0;packet[4]='B';assert(!glasses_rx_push(&rx,packet,5,0));
     packet[4]=0;assert(glasses_rx_push(&rx,packet,5,0));
     /* Actual C parser exercised with random short, oversized and unordered frames. */
-    struct { uint32_t before; GlassesRx rx; uint32_t after; } guarded = {0x12345678,{0},0x87654321};
+    struct { uint32_t before; GlassesRx rx; uint32_t after; } guarded = {0};
+    guarded.before = 0x12345678;
+    guarded.after = 0x87654321;
     srand(123);
     for (unsigned i=0;i<100000;++i) {
         uint8_t fuzz[64]; size_t n=rand()%65;
@@ -88,3 +90,4 @@ int main(void) {
     assert(!glasses_image_vectors_valid(0x20007800,0x08010201,0x30001));
     puts("Core tests passed (including 100000 malformed frame cases).");
 }
+
