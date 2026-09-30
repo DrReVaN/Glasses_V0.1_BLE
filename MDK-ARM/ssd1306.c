@@ -259,13 +259,20 @@ void ssd1306_DrawPixel(uint8_t x, uint8_t y, SSD1306_COLOR color) {
 // color    => Black or White
 char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color) {
     uint32_t i, b, j;
+    const uint16_t *glyph = 0;
+    uint8_t code = (uint8_t)ch;
     if (!Font.data || Font.FontWidth > 16 ||
         SSD1306.CurrentX + Font.FontWidth > SSD1306_HEIGHT ||
         SSD1306.CurrentY + Font.FontHeight > SSD1306_WIDTH) return 0;
     
-    // Check if character is valid
-    if (ch < 32 || ch > 126)
-        return 0;
+    /* char can be signed: interpret the internal glyph byte before indexing. */
+#ifdef SSD1306_INCLUDE_FONT_7x10
+    if (Font.data == Font_7x10.data && Font.FontWidth == 7 && Font.FontHeight == 10)
+        glyph = ssd1306_Glyph7x10(code);
+    else
+#endif
+    if (code >= 32 && code <= 126) glyph = Font.data + (code - 32) * Font.FontHeight;
+    if (!glyph) return 0;
     
 //    // Check remaining space on current line
 //    if (SSD1306_WIDTH < (SSD1306.CurrentX + Font.FontWidth) ||
@@ -277,7 +284,7 @@ char ssd1306_WriteChar(char ch, FontDef Font, SSD1306_COLOR color) {
     
     // Use the font to write
     for(i = 0; i < Font.FontHeight; i++) {
-        b = Font.data[(ch - 32) * Font.FontHeight + i];
+        b = glyph[i];
         for(j = 0; j < Font.FontWidth; j++) {
             if((b << j) & 0x8000)  {
                 ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR) color);

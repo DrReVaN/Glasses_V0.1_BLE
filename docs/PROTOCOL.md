@@ -23,7 +23,9 @@ Index beginnt bei 0, Anzahl liegt bei 1–14 und bleibt in allen Fragmenten glei
 
 Erst nach vollständigem Empfang wird der Text für die Anzeige freigegeben. Eine Queue hält vier fertige Nachrichten. Bei voller Queue wird die älteste wartende Nachricht entfernt; die aktuell angezeigte bleibt stabil. Der Diagnosezähler protokolliert dies.
 
-Das OLED besitzt ASCII-Fonts. ä/ö/ü/Ä/Ö/Ü/ß werden als ae/oe/ue/Ae/Oe/Ue/ss angezeigt. Andere Unicode-Zeichen erhalten jeweils ein `?`, Steuerzeichen ein Leerzeichen. Der fertige Displaytext wird auf 127 Zeichen begrenzt und immer nullterminiert; Kürzungen werden gezählt.
+Nachrichten verwenden den erweiterten 7×10-Font: druckbare Latin-1-Zeichen (unter anderem ä/ö/ü/Ä/Ö/Ü/ß, é/è/ç/ñ, £, ¥, ° und ±) sowie € besitzen eigene Glyphen. Die internen Displaybytes sind einzelne Glyphen-IDs, nicht UTF-8: ein € oder Umlaut belegt genau eine Zelle und einen Scrollschritt. UTF-8 auf BLE bleibt unverändert. Gängige zerlegte Latin-1-Akzente werden mit dem Basisbuchstaben zusammengesetzt. Geschwungene Anführungszeichen und Unicode-Striche werden auf die passenden ASCII-Zeichen abgebildet, … auf drei Punkte, geschützte Leerzeichen auf normale Leerzeichen. Formatzeichen, weiche Trennstriche und Emoji-Variationsselektoren belegen keine Zelle. Nicht verfügbare Zeichen, etwa Emoji oder CJK-Schriftzeichen, erhalten ein sichtbares Kästchen; es handelt sich nicht um einen vollständigen Unicode-Font. Steuerzeichen werden zu Leerzeichen. Der fertige Displaytext wird auf 127 Glyphenzellen begrenzt und immer nullterminiert; Kürzungen werden gezählt.
+
+Der Lauftext beginnt wie die Uhrzeit bei **X=6**, bleibt in einer Zeile bei Y=61 und zeigt **sechs Zeichen** gleichzeitig. Schriftgröße und Scrollintervall bleiben unverändert. Die letzte Zelle endet bei X=47, innerhalb der bisherigen Lauftextgrenze X=48. Uhr/Datum behalten ihre bisherigen Positionen und Pixel.
 
 ## Uhr
 

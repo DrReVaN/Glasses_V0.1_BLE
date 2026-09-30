@@ -10,6 +10,8 @@ typedef struct {
     bool connected, bootloader, pairing, ota_requested;
 } GlassesDisplay;
 
+#define GLASSES_MESSAGE_COLUMNS 6u
+
 /* V1 optical layout: preserve the coordinates and fonts of the working firmware.
  * Logical OLED RAM is 64 x 128; it is not the prism's usable image area. */
 void glasses_display_render(const GlassesDisplay *view);

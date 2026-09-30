@@ -404,6 +404,13 @@ FontDef Font_6x8 = {6,8,Font6x8};
 #endif
 #ifdef SSD1306_INCLUDE_FONT_7x10
 FontDef Font_7x10 = {7,10,Font7x10};
+#include "ssd1306_font7x10_extended.h"
+const uint16_t *ssd1306_Glyph7x10(uint8_t glyph) {
+    if (glyph >= 32 && glyph <= 126) return Font7x10 + (glyph - 32) * 10;
+    if (glyph == 0x80 || glyph == 0x81) return Font7x10Extended[glyph - 0x80];
+    if (glyph >= 0xA1) return Font7x10Extended[glyph - 0xA1 + 2];
+    return 0;
+}
 #endif
 #ifdef SSD1306_INCLUDE_FONT_11x18
 FontDef Font_11x18 = {11,18,Font11x18};

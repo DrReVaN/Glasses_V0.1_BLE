@@ -7,15 +7,31 @@ void glasses_rx_expire(GlassesRx *rx, uint32_t now) {
         ++rx->rejected; glasses_rx_reset(rx);
     }
 }
-/* Decode whole UTF-8 messages, including code points spanning fragments.
- * The display font is ASCII: German umlauts are expanded, other glyphs use ?. */
+/* Compose common decomposed Latin-1 accents without changing the wire format. */
+static uint8_t compose_accent(uint8_t base, uint32_t mark) {
+    const char *pairs;
+    switch (mark) {
+    case 0x300: pairs = "A\xC0" "E\xC8" "I\xCC" "O\xD2" "U\xD9" "a\xE0" "e\xE8" "i\xEC" "o\xF2" "u\xF9"; break;
+    case 0x301: pairs = "A\xC1" "E\xC9" "I\xCD" "O\xD3" "U\xDA" "Y\xDD" "a\xE1" "e\xE9" "i\xED" "o\xF3" "u\xFA" "y\xFD"; break;
+    case 0x302: pairs = "A\xC2" "E\xCA" "I\xCE" "O\xD4" "U\xDB" "a\xE2" "e\xEA" "i\xEE" "o\xF4" "u\xFB"; break;
+    case 0x303: pairs = "A\xC3" "N\xD1" "O\xD5" "a\xE3" "n\xF1" "o\xF5"; break;
+    case 0x308: pairs = "A\xC4" "E\xCB" "I\xCF" "O\xD6" "U\xDC" "a\xE4" "e\xEB" "i\xEF" "o\xF6" "u\xFC" "y\xFF"; break;
+    case 0x30A: pairs = "A\xC5" "a\xE5"; break;
+    case 0x327: pairs = "C\xC7" "c\xE7"; break;
+    default: return 0;
+    }
+    for (; *pairs; pairs += 2) if ((uint8_t)pairs[0] == base) return (uint8_t)pairs[1];
+    return 0;
+}
+/* Decode complete UTF-8 messages, including characters spanning BLE fragments.
+ * Queue bytes are glyph IDs: a multibyte euro/umlaut scrolls as one whole cell. */
 static bool text_decode(const uint8_t *raw, size_t len, char *out, bool *truncated) {
     size_t i = 0, n = 0;
     while (i < len) {
         uint32_t cp = raw[i++], minimum = 0;
         unsigned extra = 0;
         const char *replacement = NULL;
-        char ascii[2] = { '?', 0 };
+        char glyph[2] = { (char)GLASSES_GLYPH_MISSING, 0 };
         if (!cp) { /* Only the last fragment may contain zero padding. */
             while (i < len) if (raw[i++]) return false;
             break;
@@ -31,14 +47,38 @@ static bool text_decode(const uint8_t *raw, size_t len, char *out, bool *truncat
             cp = (cp << 6) | (c & 63);
         }
         if (cp < minimum || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) return false;
-        switch (cp) {
-        case 0xE4: replacement = "ae"; break; case 0xF6: replacement = "oe"; break;
-        case 0xFC: replacement = "ue"; break; case 0xC4: replacement = "Ae"; break;
-        case 0xD6: replacement = "Oe"; break; case 0xDC: replacement = "Ue"; break;
-        case 0xDF: replacement = "ss"; break;
-        default: ascii[0] = cp >= 32 && cp <= 126 ? (char)cp : cp < 32 ? ' ' : '?';
+        if (cp >= 0x300 && cp <= 0x36F) {
+            uint8_t composed = n && !*truncated ? compose_accent((uint8_t)out[n-1], cp) : 0;
+            if (composed) out[n-1] = (char)composed;
+            /* Unavailable diacritics retain the base letter, without extra cells. */
+            continue;
         }
-        if (!replacement) replacement = ascii;
+        switch (cp) {
+        case 0x20AC: glyph[0] = (char)GLASSES_GLYPH_EURO; break;
+        case 0xA0: case 0x2000: case 0x2001: case 0x2002: case 0x2003:
+        case 0x2004: case 0x2005: case 0x2006: case 0x2007: case 0x2008:
+        case 0x2009: case 0x200A: case 0x202F: case 0x205F: case 0x3000:
+        case 0x2028: case 0x2029: glyph[0] = ' '; break;
+        case 0x2010: case 0x2011: case 0x2012: case 0x2013: case 0x2014:
+        case 0x2015: case 0x2212: glyph[0] = '-'; break;
+        case 0x2018: case 0x2019: case 0x201A: case 0x201B: case 0x2032:
+            glyph[0] = '\''; break;
+        case 0x201C: case 0x201D: case 0x201E: case 0x201F: case 0x2033:
+            glyph[0] = '"'; break;
+        case 0x2022: glyph[0] = (char)0xB7; break;
+        case 0x2026: replacement = "..."; break;
+        case 0x152: replacement = "OE"; break; case 0x153: replacement = "oe"; break;
+        case 0x141: glyph[0] = 'L'; break; case 0x142: glyph[0] = 'l'; break;
+        case 0x1E9E: replacement = "SS"; break;
+        case 0xAD: case 0x200B: case 0x200C: case 0x200D: case 0x200E: case 0x200F:
+        case 0x202A: case 0x202B: case 0x202C: case 0x202D: case 0x202E:
+        case 0x2060: case 0x2066: case 0x2067: case 0x2068: case 0x2069:
+        case 0xFE0E: case 0xFE0F: case 0xFEFF: continue; /* formatting, no cells */
+        default:
+            if ((cp >= 32 && cp <= 126) || (cp >= 0xA1 && cp <= 0xFF)) glyph[0] = (char)cp;
+            else if (cp < 32 || (cp >= 0x7F && cp <= 0x9F)) glyph[0] = ' ';
+        }
+        if (!replacement) replacement = glyph;
         while (*replacement) {
             if (n + 1 < GLASSES_TEXT_SIZE) out[n++] = *replacement;
             else *truncated = true;

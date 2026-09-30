@@ -10,6 +10,7 @@ def main():
     p.add_argument("--cc",default="cc",help="C compiler command, e.g. gcc or 'zig cc'")
     p.add_argument("--sanitize",action="store_true")
     args=p.parse_args()
+    subprocess.run([sys.executable,str(ROOT/"tools/font7x10.py"),"--check"],check=True)
     out=ROOT/"build/tests";out.mkdir(parents=True,exist_ok=True)
     common=shlex.split(args.cc)+["-std=c99","-Wall","-Wextra","-Werror","-I"+str(ROOT/"tests/stubs"),"-I"+str(ROOT/"Core/Inc")]
     if args.sanitize:common+=["-fsanitize=address,undefined","-fno-sanitize-recover=all"]

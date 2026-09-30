@@ -7,6 +7,10 @@
 #define GLASSES_RX_SIZE 252u
 #define GLASSES_QUEUE_SIZE 4u
 #define GLASSES_RX_TIMEOUT_MS 3000u
+/* Internal display text: one byte per cell, ASCII + printable Latin-1.
+ * 0x80 is euro, 0x81 is a visible missing-glyph box. BLE remains UTF-8. */
+#define GLASSES_GLYPH_EURO 0x80u
+#define GLASSES_GLYPH_MISSING 0x81u
 typedef struct {
     uint8_t raw[GLASSES_RX_SIZE];
     size_t used;

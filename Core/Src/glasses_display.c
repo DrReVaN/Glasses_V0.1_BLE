@@ -35,12 +35,13 @@ void glasses_display_render(const GlassesDisplay *view) {
         text(7, 56, "OTA?", Font_7x10);
         text(7, 66, "1+3-", Font_7x10);
     } else if (view->message && view->message[0]) {
-        char window[6] = {0};
-        size_t i, length = strlen(view->message);
-        for (i = 0; i < 5 && view->scroll < length && i < length - view->scroll; ++i)
+        char window[GLASSES_MESSAGE_COLUMNS + 1] = {0};
+        size_t length = strlen(view->message);
+        for (size_t i = 0; i < GLASSES_MESSAGE_COLUMNS && view->scroll < length && i < length - view->scroll; ++i)
             window[i] = view->message[view->scroll + i];
-        /* Original first five-character frame: x=14, y=61, Font_7x10. */
-        text(14, 61, window, Font_7x10);
+        /* Align with the clock's X=6. Six 7x10 cells end at X=47,
+         * inside the previous five-cell message boundary at X=48. */
+        text(6, 61, window, Font_7x10);
     } else if (view->bootloader) {
         text(10, 56, "OTA", Font_7x10);
         text(7, 66, view->connected ? "Link" : "Pair", Font_7x10);

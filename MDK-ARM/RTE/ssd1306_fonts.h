@@ -16,6 +16,9 @@ extern FontDef Font_6x8;
 #endif
 #ifdef SSD1306_INCLUDE_FONT_7x10
 extern FontDef Font_7x10;
+/* Glyph IDs match printable Latin-1; 0x80 euro and 0x81 missing-glyph box.
+ * Returns NULL for unsupported bytes. Only the message font is extended. */
+const uint16_t *ssd1306_Glyph7x10(uint8_t glyph);
 #endif 
 #ifdef SSD1306_INCLUDE_FONT_11x18
 extern FontDef Font_11x18;

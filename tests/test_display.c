@@ -43,7 +43,7 @@ static void render(GlassesDisplay *view, bool message) {
     writes = 0;
     glasses_display_render(view);
     assert(writes == SSD1306_HEIGHT / 8);
-    bounds(message ? 0 : 6, message ? 48 : 34);
+    bounds(6, message ? 47 : 34);
 }
 static void legacy_text(uint8_t x, uint8_t y, char *str, FontDef font) {
     ssd1306_SetCursor(x, y);
@@ -115,9 +115,9 @@ int main(void) {
     char message[GLASSES_TEXT_SIZE];
     view.message = message;
     for (unsigned ch = 33; ch <= 126; ++ch) {
-        memset(message, ch, 5); message[5] = 0;
+        memset(message, ch, 6); message[6] = 0;
         ssd1306_Fill(Black);
-        legacy_text(14, 61, message, Font_7x10);
+        legacy_text(6, 61, message, Font_7x10);
         ssd1306_UpdateScreen();
         memcpy(reference, frame, sizeof(frame));
         render(&view, true);
@@ -126,8 +126,52 @@ int main(void) {
     memset(message, 'M', sizeof(message) - 1); message[sizeof(message) - 1] = 0;
     for (view.scroll = 0; view.scroll < sizeof(message) - 1; ++view.scroll)
         render(&view, true);
+    /* All extended glyphs really reach SPI; signed char must never index ASCII. */
+    assert(ssd1306_Glyph7x10(0x80) != 0 && ssd1306_Glyph7x10(0x81) != 0);
+    assert(memcmp(ssd1306_Glyph7x10(0x80), ssd1306_Glyph7x10('?'), 20) != 0);
+    assert(ssd1306_Glyph7x10(0x82) == 0 && ssd1306_Glyph7x10(0xA0) == 0);
+    view.scroll = 0;
+    for (unsigned ch = 0x80; ch <= 0xFF; ++ch) {
+        if (ch != 0x80 && ch != 0x81 && ch < 0xA1) continue;
+        const uint16_t *glyph = ssd1306_Glyph7x10((uint8_t)ch);
+        assert(glyph);
+        memset(message,ch,6); message[6]=0;
+        render(&view,true); memcpy(reference,frame,sizeof(frame));
+        ssd1306_Fill(Black);
+        /* Independent placement of six glyphs, including accents at row 9. */
+        for (unsigned col=0;col<6;++col)
+            for (unsigned dy=0;dy<10;++dy) for (unsigned dx=0;dx<7;++dx)
+                if (glyph[dy] & (0x8000u >> dx))
+                    ssd1306_DrawPixel(6+col*7+dx,61+dy,White);
+        ssd1306_UpdateScreen(); assert(!memcmp(frame,reference,sizeof(frame)));
+    }
+    /* Exercise the wire decoder and renderer together, across a UTF-8 split. */
+    GlassesRx rx = {0};
+    const uint8_t sample[] = "12345678901234567\xE2\x82\xAC" "12,50\xC3\x84\xC3\x96\xC3\x9C";
+    for (size_t i=0;i<sizeof(sample)-1;i+=18) {
+        uint8_t packet[20]={(uint8_t)(i/18),(uint8_t)((sizeof(sample)-2)/18+1)};
+        size_t n=sizeof(sample)-1-i; if(n>18)n=18;
+        memcpy(packet+2,sample+i,n); assert(glasses_rx_push(&rx,packet,n+2,(uint32_t)i));
+    }
+    assert(glasses_rx_pop(&rx,message));
+    assert(strlen(message)==26 && (uint8_t)message[17]==GLASSES_GLYPH_EURO);
+    for (view.scroll=0;view.scroll<strlen(message);++view.scroll) render(&view,true);
+    view.scroll=17; render(&view,true);
+    FILE *preview=fopen("build/tests/display-unicode.pbm","wb");
+    assert(preview); fprintf(preview,"P4\n64 128\n");
+    for(unsigned y=0;y<128;++y) for(unsigned bx=0;bx<8;++bx) {
+        uint8_t bits=0;
+        for(unsigned bit=0;bit<8;++bit) {
+            unsigned x=bx*8+bit;
+            if(frame[y+(x/8)*SSD1306_WIDTH] & (1u<<(x%8))) bits|=(uint8_t)(0x80u>>bit);
+        }
+        assert(fputc(bits,preview)!=EOF);
+    }
+    assert(fclose(preview)==0);
+    view.scroll=SIZE_MAX; glasses_display_render(&view);
+    for(size_t i=0;i<sizeof(frame);++i) assert(frame[i]==0);
     view.message = "";
     render(&view, false);
-    puts("Display: legacy clock, BLE and message frames match pixel-for-pixel; all UI states stay within the legacy footprint.");
+    puts("Display: clock/BLE ASCII unchanged; six message cells align at X=6; all 97 new glyphs remain inside the optical footprint.");
     return 0;
 }
