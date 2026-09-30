@@ -1,10 +1,10 @@
 #include "glasses_app.h"
+#include "glasses_display.h"
 #include "glasses_ota.h"
 #include "main.h"
 #include "STM32_Cap1203.h"
 #include "ssd1306.h"
 #include "ble.h"
-#include <stdio.h>
 #include <string.h>
 #if CFG_LPM_SUPPORTED != 0
 #error "Local HAL_GetTick clock requires SysTick to keep running; use CPU1 Sleep"
@@ -73,36 +73,14 @@ void Glasses_Fatal(uint32_t code) {
     glasses_fault[2] = __get_IPSR(); __DSB(); NVIC_SystemReset();
 }
 static void render(void) {
-    char line[16];
-    ssd1306_Fill(Black);
-    if (pairing) {
-        snprintf(line, sizeof(line), "%06lu", (unsigned long)pair_value);
-        ssd1306_SetCursor(6, 56); ssd1306_WriteString(line, Font_6x8, White);
-        ssd1306_SetCursor(2, 68); ssd1306_WriteString("1Yes3No", Font_6x8, White);
-    } else if (ota_requested) {
-        ssd1306_SetCursor(8, 56); ssd1306_WriteString("OTA?", Font_7x10, White);
-        ssd1306_SetCursor(2, 68); ssd1306_WriteString("1Yes3No", Font_6x8, White);
-    } else if (message[0]) {
-        /* Keep the five-character window used by the working V1 firmware.
-         * The RAM dimensions do not identify the panel's visible area. */
-        char window[6] = {0}; size_t n = strlen(message), i;
-        for (i = 0; i < 5 && scroll + i < n; ++i) window[i] = message[scroll + i];
-        ssd1306_SetCursor(4, 61); ssd1306_WriteString(window, Font_7x10, White);
-    } else {
+    GlassesDisplay view = {.clock = &glasses_clock, .message = message,
+                          .scroll = scroll, .pair_value = pair_value,
+                          .connected = connected, .pairing = pairing,
+                          .ota_requested = ota_requested};
 #ifdef SMARTGLASSES_BOOTLOADER
-        ssd1306_SetCursor(5, 56); ssd1306_WriteString("Update", Font_7x10, White);
-        ssd1306_SetCursor(5, 70); ssd1306_WriteString(connected ? "BLE OK" : "Pair", Font_7x10, White);
-#else
-        if (glasses_clock.valid) snprintf(line, sizeof(line), "%02u:%02u", glasses_clock.hour, glasses_clock.minute);
-        else strcpy(line, "--:--");
-        ssd1306_SetCursor(6, 58); ssd1306_WriteString(line, Font_6x8, White);
-        if (glasses_clock.valid) snprintf(line, sizeof(line), "%02u.%02u", glasses_clock.day, glasses_clock.month);
-        else strcpy(line, "--.--");
-        ssd1306_SetCursor(6, 68); ssd1306_WriteString(line, Font_6x8, White);
-        if (!connected) { ssd1306_SetCursor(10, 82); ssd1306_WriteString("BLE?", Font_6x8, White); }
+    view.bootloader = true;
 #endif
-    }
-    ssd1306_UpdateScreen();
+    glasses_display_render(&view);
 }
 void Glasses_Process(void) {
     uint32_t now = HAL_GetTick();

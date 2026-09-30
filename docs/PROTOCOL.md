@@ -33,6 +33,8 @@ Beim alten Acht-Ziffern-Format fehlt das Jahr. Dafür verwendet die Firmware ein
 
 ## Bedienung und Fehler
 
+Die sechs Ziffern des Zahlenvergleichs erscheinen wegen des begrenzten optischen Bereichs auf zwei Zeilen: zuerst die drei Ziffern oben, dann die drei unten lesen. `123` über `456` entspricht dem Handy-Code `123456`. Bei der OTA-Bestätigung steht unter `OTA?` die Kurzform `1+3-` für Pad 1 zustimmen und Pad 3 ablehnen. Die Displaykorrektur ändert weder BLE-Protokoll noch Paketversion 0.2.0; die bestehende Android-App 1.1.0 bleibt kompatibel.
+
 - Pad 1 eine Sekunde: Uhr/Home; im Zahlenvergleich oder bei OTA-Anfrage zustimmen.
 - Pad 2 ungefähr 2,3 Sekunden: Anzeige und Vibration aus/ein. BLE bleibt aktiv, CPU1 schläft zwischen kurzen Arbeitsschritten. OFF wird nur einmal beim Erreichen der Haltefrist ausgelöst; Loslassen ist vor der nächsten Aktion erforderlich.
 - Pad 3 eine Sekunde: laufenden Text von vorn lesen; Pairing/OTA ablehnen.

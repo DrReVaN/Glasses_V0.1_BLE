@@ -1,8 +1,10 @@
-# Smartglasses firmware 0.2.0
+# Smartglasses firmware 0.2.0 – V1-Displaykorrektur
 
 Firmware für die STM32WB35CE-Brille aus dem [Hackster-Projekt](https://www.hackster.io/team-smart-glasses/diy-smart-glasses-20a2bf).
 
 Dieser Entwicklungsstand repariert Empfang, Interruptbehandlung, Bedienzeiten, OFF/ON, Lauftext, Uhr und Treiberfehler. Geschützte BLE-Schreibzugriffe benötigen eine am Gerät bestätigte Bindung. Ein eigener CPU1-Bootloader ermöglicht anschließend Firmware-Updates über BLE.
+
+Die V1-Displaykorrektur stellt die ursprünglichen Koordinaten und Zeichenabstände für Uhr, Datum, BLE-Warten und das erste Lauftextbild wieder her. Pairing und OTA verwenden denselben kleinen Inhaltsbereich. BLE- und Manifestversion bleiben für die vorhandene Android-App bei 0.2.0; korrigierte Dateien tragen den Zusatz `display-fix` und eigene Prüfsummen. Zum Korrigieren auch der Bootloader-Anzeige beide Images über SWD installieren; ein BLE-OTA ersetzt nur die Anwendung.
 
 **Vor der Verwendung einmal Bootloader und Anwendung über ST-Link installieren.** Der alte Firmwarestand allein kann noch kein OTA. Diese Implementierung wurde gebaut und am Rechner getestet; die Hardwareabnahme steht aus.
 
@@ -23,11 +25,12 @@ Das erzeugt zwei getrennte Images, Prüfsummen und `build/install.hex` für die 
 - [BLE-Protokoll und Bedienung](docs/PROTOCOL.md)
 - [Tests, behobene Befunde und Hardwareabnahme](docs/VALIDATION.md)
 - [Bestückte V1-Hardware und Abgleich mit dem veröffentlichten V2-Schaltplan](docs/HARDWARE.md)
+- [V1-Displaykorrektur mit dem vorbereiteten Wemos installieren](docs/DISPLAY_UPDATE.md)
 - [Passende Android-App auf dem Dev-Branch](https://github.com/DrReVaN/SmartGlasses-App/tree/dev/firmware-fixes-ota)
 
 ## Quellcode und Build
 
-`Core/Src/glasses_core.c` enthält den portablen Empfang, die lokale Uhr und Touch-Auswertung. `glasses_app.c` steuert die Hardware mit kurzen Arbeitsschritten; `glasses_ota.c` implementiert den Update-Empfang. `glasses_flash.c` koordiniert Flash-Zugriffe mit CPU2 und erzeugt einmalig individuelle BLE-Schlüssel.
+`Core/Src/glasses_core.c` enthält den portablen Empfang, die lokale Uhr und Touch-Auswertung. `glasses_app.c` steuert die Hardware mit kurzen Arbeitsschritten; `glasses_display.c` zeichnet das V1-Layout; `glasses_ota.c` implementiert den Update-Empfang. `glasses_flash.c` koordiniert Flash-Zugriffe mit CPU2 und erzeugt einmalig individuelle BLE-Schlüssel.
 
 Die aktiven Touch-/OLED-Treiber liegen unter `MDK-ARM/*.c`; ihre Header liegen unter `MDK-ARM/RTE`. Die abweichenden RTE-Implementierungskopien und alten Build-Produkte wurden entfernt.
 

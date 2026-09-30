@@ -2730,6 +2730,11 @@
               <FilePath>../Core/Src/glasses_core.c</FilePath>
             </File>
             <File>
+              <FileName>glasses_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/glasses_display.c</FilePath>
+            </File>
+            <File>
               <FileName>glasses_app.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/glasses_app.c</FilePath>
@@ -5478,6 +5483,11 @@
               <FileName>glasses_core.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/glasses_core.c</FilePath>
+            </File>
+            <File>
+              <FileName>glasses_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/glasses_display.c</FilePath>
             </File>
             <File>
               <FileName>glasses_app.c</FileName>

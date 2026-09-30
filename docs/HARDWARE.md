@@ -33,7 +33,15 @@ Verglichen wurde der aktive Treiber `MDK-ARM/ssd1306.c` aus dem ursprünglichen 
 - Vertikale/horizontale Spiegelung und die gedrehte Pixelabbildung.
 - Der bisherige **128×64-RAM-Puffer**. Diese Softwaredefinition ist kein Nachweis der sichtbaren Panelauflösung.
 - Kontrast 50 nach Initialisierung und 100 ms Anlaufzeit nach Freigabe des OLED-Wandlers; die Anlaufzeit wird nun im Vordergrund ohne lange blockierende Pause verwaltet.
-- Lauftextfenster mit fünf Zeichen in `Font_7x10` bei y=61. Die neuen Pairing-Ziffern und Bestätigungshinweise verwenden die kleinere `Font_6x8`, damit sie weniger horizontale Fläche belegen.
+- Uhr und Datum pixelgleich zum ursprünglichen Layout: zweistellige Felder bei x=6 und x=21, Separator bei x=17; Uhr bei y=58, Datum bei y=66, jeweils `Font_6x8`.
+- BLE-Warteanzeige: `BLE` bei (10,56), `Wait` bei (7,66), jeweils `Font_7x10`.
+- Lauftextfenster mit fünf Zeichen in `Font_7x10` bei (14,61), entsprechend dem ersten Textbild der alten Firmware. Das neue Lauftextfenster rückt anschließend zeichenweise weiter.
+
+Die erste OTA-Fassung hatte die Datumszeile nach y=68 verschoben, die Ziffernabstände vergrößert und eine Statuszeile bei y=82 ergänzt. Der Besitzer meldete damit ein Bild außerhalb seiner Linse. Die Displaykorrektur verwendet ausschließlich den aus dem alten Programm belegten Bereich: y=56–75, für Uhr/Status x=6–34 und für Lauftext höchstens x=0–48. Das ist eine Grenze für die gezeichneten Inhalte, keine Messung der Panelauflösung oder der Optik.
+
+Neue Anzeigen bleiben ebenfalls darin: Pairing zeigt drei Ziffern oben bei (10,56) und drei darunter bei (10,66), jeweils `Font_7x10`. Obere Zeile zuerst lesen; `123` über `456` bedeutet `123456`. Pad 1 bestätigt weiterhin nach einer Sekunde, Pad 3 lehnt ab. Die OTA-Frage zeigt `OTA?` und darunter `1+3-` (Pad 1 ja, Pad 3 nein). Der Bootloader zeigt `OTA` und darunter `Pair` oder `Link`. Keine zusätzliche dritte Zeile ist vorgesehen.
+
+`tests/test_display.c` verwendet den tatsächlichen Renderer, SSD1306-Treiber und die originalen Fonts. Die ausgegebenen SPI-Bilddaten werden mit den ursprünglichen Uhr-/Datums-/BLE-Koordinaten und dem ersten Lauftextbild verglichen. Alle neuen Dialoge und sämtliche dreistelligen Zifferngruppen werden auf Pixel außerhalb der alten Inhaltsgrenzen geprüft.
 
 Gezielt geändert wurden Busfehlerbehandlung, endliche Übertragungsfristen, ein definierter 1-ms-RESET-Puls und Grenzen für Pixel/Fonts. Diese Änderungen sowie Pairing-Anzeige, ausgeschalteter Zustand und erneuter Displaystart müssen an der Brille geprüft werden.
 
