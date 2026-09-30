@@ -7,12 +7,26 @@
 #include "custom_stm.h"
 #include "glasses_app.h"
 #include "glasses_ota.h"
+#include "glasses_version.h"
 #include <string.h>
 #if CFG_BONDING_MODE != 1 || CFG_SC_SUPPORT != CFG_SECURE_MANDATORY || CFG_ENCRYPTION_KEY_SIZE_MIN != 16
 #error "Smartglasses requires bonded Secure Connections with 16-byte encryption keys"
 #endif
 static uint16_t info_svc, receive_svc, fw_char, name_char, time_char, push_char, boot_char, diag_char;
 static uint16_t ota_svc, begin_char, data_char, end_char;
+#ifdef SMARTGLASSES_BOOTLOADER
+#define GLASSES_IMAGE_MODE 1
+#else
+#define GLASSES_IMAGE_MODE 0
+#endif
+/* Fixed image offset permits a manifest to be checked against the binary.
+ * GATT identity appends the installed application's metadata size and CRC. */
+__attribute__((used, section(".firmware_version"))) const uint8_t glasses_image_version[12] = {
+    'S','G','V','1', GLASSES_VERSION_MAJOR & 255, GLASSES_VERSION_MAJOR >> 8,
+    GLASSES_VERSION_MINOR & 255, GLASSES_VERSION_MINOR >> 8,
+    GLASSES_VERSION_PATCH & 255, GLASSES_VERSION_PATCH >> 8,
+    GLASSES_PROTOCOL_FORMAT, GLASSES_IMAGE_MODE
+};
 #ifdef SMARTGLASSES_BOOTLOADER
 void Glasses_OtaWrite(uint8_t kind, uint16_t conn, uint16_t attr, const uint8_t *data, uint8_t len);
 #endif
@@ -84,7 +98,7 @@ static SVCCTL_EvtAckStatus_t handler(void *packet) {
 }
 void SVCCTL_InitCustomSvc(void) {
     Service_UUID_t s;
-    uint8_t version[4] = {0,2,0,0};
+    uint8_t version[20] = {0,2,0,0};
     uint8_t name[] = "Smartglasses";
 #ifdef SMARTGLASSES_BOOTLOADER
     version[3] = 1;
@@ -92,9 +106,17 @@ void SVCCTL_InitCustomSvc(void) {
     SVCCTL_RegisterSvcHandler(handler);
     uuid(s.Service_UUID_128, 0x10, true);
     check(aci_gatt_add_service(UUID_TYPE_128, &s, PRIMARY_SERVICE, 7, &info_svc));
-    add(info_svc, 0x11, 4, false, false, &fw_char);
+    /* Extend the existing read value without shifting any GATT handles. */
+    add(info_svc, 0x11, 20, false, false, &fw_char);
     add(info_svc, 0x12, 32, false, false, &name_char);
     add(info_svc, 0x13, 20, false, true, &diag_char);
+    {
+        const GlassesImage *installed = (const GlassesImage *)GLASSES_META_ADDRESS;
+        memcpy(version + 4, glasses_image_version + 4, 7);
+        uint32_t size = installed->magic == GLASSES_IMAGE_MAGIC && installed->format == 1 ? installed->size : 0;
+        uint32_t crc = size ? installed->crc : 0;
+        memcpy(version + 12, &size, 4); memcpy(version + 16, &crc, 4);
+    }
     check(aci_gatt_update_char_value(info_svc, fw_char, 0, sizeof(version), version));
     check(aci_gatt_update_char_value(info_svc, name_char, 0, sizeof(name) - 1, name));
     uuid(s.Service_UUID_128, 0x20, true);

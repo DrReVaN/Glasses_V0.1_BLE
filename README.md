@@ -1,4 +1,4 @@
-# Smartglasses firmware 0.2.0 – V1-Display, Sonderzeichen und OTA
+# Smartglasses firmware 0.3.0 – V1-Display, Sonderzeichen und OTA-Versionen
 
 Firmware für die STM32WB35CE-Brille aus dem [Hackster-Projekt](https://www.hackster.io/team-smart-glasses/diy-smart-glasses-20a2bf).
 
@@ -13,6 +13,8 @@ Die anschließende OTA-Startkorrektur (`ota-start-fix`) schreibt nach dem geprü
 Die aktuelle OTA-Löschkorrektur (`ota-erase-fix`) hält die CPU2-Löschfreigabe während blockierter Versuche und aller Seiten aktiv und beendet sie vor der Datenübertragung. Der bisherige ON/OFF-Wechsel bei jedem Versuch konnte die Freigabe immer wieder verzögern. Kurze Bootloader-Verbindungsintervalle werden auf 80–100 ms angefragt. OTA-Empfänger und Produktions-Flash-Treiber werden hierfür gemeinsam mit einer zeitversetzten CPU2-Freigabe getestet. Auch diese Bootloader-Korrektur wird einmal per Wemos/SWD installiert.
 
 ## Einstieg
+
+Firmware 0.3.0 trägt eine mit dem Image verbundene Releaseversion und meldet beim Start Version, Größe und CRC. Android-App 1.2.0 prüft GitHub-Releases automatisch, lädt nur nach Auswahl und installiert erst nach Bestätigung. Ältere kompatible Pakete sind als vollständiger OTA-Rückwechsel auswählbar; Version 0.2.0 archiviert den zuvor bestätigten Löschkorrektur-Stand. **Zuerst App 1.2.0 installieren.** [GitHub-Releases, Versionsverwaltung und Anleitung](docs/RELEASES.md).
 
 Der aktuelle Nachrichtenfix (`text-fix`) ergänzt eigene Euro-/Latin-1-Glyphen, setzt häufige Unicode-Satzzeichen lesbar um und richtet Nachrichten wie die Uhr bei X=6 aus. Sechs Zeichen passen bei gleicher 7×10-Schriftgröße in die bestehende Zeile. Mit dem bereits funktionierenden Löschkorrektur-Bootloader genügt das Update der Anwendung über OTA; Android-App 1.1.2 bleibt verwendbar. [OTA-Anleitung und Zeichenumfang](docs/TEXT_UPDATE.md).
 
@@ -35,6 +37,7 @@ Das erzeugt zwei getrennte Images, Prüfsummen und `build/install.hex` für die 
 - [OTA-Startkorrektur mit dem vorbereiteten Wemos installieren](docs/OTA_START_UPDATE.md)
 - [Aktuelle OTA-Löschkorrektur mit dem vorbereiteten Wemos installieren](docs/OTA_ERASE_UPDATE.md)
 - [Sonderzeichen und ausgerichteten Nachrichtentext per OTA installieren](docs/TEXT_UPDATE.md)
+- [Firmwareversionen, GitHub-Releases und Rückwechsel](docs/RELEASES.md)
 - [Passende Android-App auf dem Dev-Branch](https://github.com/DrReVaN/SmartGlasses-App/tree/dev/firmware-fixes-ota)
 
 ## Quellcode und Build

@@ -1,6 +1,9 @@
 LR_IROM1 0x8000000 0xe000 {
- ER_IROM1 0x8000000 0xe000 {
+ ER_VECTORS 0x8000000 0x140 {
   *.o (RESET, +First)
+ }
+ ER_VERSION 0x8000140 0xc { *(.firmware_version) }
+ ER_IROM1 0x800014c 0xdeb4 {
   *(InRoot$$Sections)
   .ANY (+RO)
  }

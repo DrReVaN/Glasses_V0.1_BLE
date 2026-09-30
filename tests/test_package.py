@@ -14,7 +14,7 @@ class PackageTests(unittest.TestCase):
             binary=Path(directory)/"app.bin";manifest=binary.with_suffix(".json")
             data=struct.pack("<II",0x20007800,0x08010141)+bytes(0x200-8)
             info={"format":1,"target":"STM32WB35CE","profile":"application","address":"0x08010000",
-                  "size":len(data),"crc32":f"{zlib.crc32(data):08x}","sha256":hashlib.sha256(data).hexdigest()}
+                  "size":len(data),"crc32":f"{zlib.crc32(data):08x}","sha256":hashlib.sha256(data).hexdigest(),"version":"0.2.0"}
             binary.write_bytes(data);manifest.write_text(json.dumps(info))
             self.assertEqual(package.validate(binary,manifest)[0],data)
             binary.write_bytes(data[:-1]+b"X")

@@ -16,6 +16,7 @@ PHDRS {
 _estack = ORIGIN(RAM) + LENGTH(RAM);
 SECTIONS {
  .isr_vector : { KEEP(*(.isr_vector)) } > FLASH :flash
+ .firmware_version ORIGIN(FLASH) + 0x140 : { KEEP(*(.firmware_version)) } > FLASH :flash
  .text : { *(.text*) *(.rodata*) KEEP(*(.init)) KEEP(*(.fini)) . = ALIGN(4); } > FLASH :flash
  .ARM.extab : { *(.ARM.extab*) } > FLASH :flash
  .ARM.exidx : { __exidx_start = .; *(.ARM.exidx*) __exidx_end = .; } > FLASH :flash
@@ -35,4 +36,5 @@ SECTIONS {
  /DISCARD/ : { *(.note.GNU-stack) }
 }
 ASSERT(SIZEOF(.isr_vector) == 0x13C, "WB35 vector table must contain 79 entries")
+ASSERT(SIZEOF(.firmware_version) == 12, "Firmware version block must be 12 bytes")
 ASSERT(LOADADDR(.data) + SIZEOF(.data) <= ORIGIN(FLASH) + LENGTH(FLASH), "Image overlaps reserved flash")

@@ -5,7 +5,7 @@ Alle UUIDs bleiben für Info- und Empfangsdienste kompatibel. Schreibzugriffe ve
 | Funktion | UUID | Daten |
 |---|---|---|
 | Geräteinfo-Service | 00000010-cc7a-482a-984a-7f2ed5b3e58f | Read-Dienst |
-| Firmware | 00000011-8e22-4541-9d4c-21edae82ed19 | 4 Bytes: 0, 2, 0, Modus (0 App / 1 Bootloader) |
+| Firmware | 00000011-8e22-4541-9d4c-21edae82ed19 | Altstand: 4 Bytes Discovery-Protokoll 0,2,0,Modus. Ab Release 0.3.0: zusätzlich uint16 Major/Minor/Patch, Format 1, reserviert 0, uint32 Imagegröße/CRC; insgesamt 20 Bytes, little-endian |
 | Gerätename | 00000012-8e22-4541-9d4c-21edae82ed19 | ASCII |
 | Diagnose | 00000013-8e22-4541-9d4c-21edae82ed19 | 5 uint32 little-endian: RCC-Resetflags, Fault-Code, verworfene RX, verlorene Queue-Nachrichten, gekürzte Texte; geschütztes Lesen |
 | Empfangs-Service | 00000020-cc7a-482a-984a-7f2ed5b3e58f | Schreibdienst |
@@ -18,6 +18,8 @@ Alle UUIDs bleiben für Info- und Empfangsdienste kompatibel. Schreibzugriffe ve
 | OTA End | 0000fe23-8e22-4541-9d4c-21edae82ed19 | ASCII END1 |
 
 ## Nachrichten
+
+Die Releaseversion ist ab 0.3.0 unabhängig von den Discovery-Protokollbytes. UUIDs und Handles bleiben gleich. Details und binäre Versionsbindung stehen in [RELEASES.md](RELEASES.md). Der alte Bootloader bleibt für Anwendungsupdates verwendbar; zuerst App 1.2.0 installieren, weil App 1.1.2 nur die alte vier Byte lange Antwort kennt.
 
 Index beginnt bei 0, Anzahl liegt bei 1–14 und bleibt in allen Fragmenten gleich. Alle Fragmente außer dem letzten enthalten genau 18 Nutzbytes. Der Empfangspuffer ist 252 Bytes groß. Null-Padding ist ausschließlich am Ende des letzten Fragments zulässig. Leere Nachrichten, ungültige UTF-8-Sequenzen, fehlende Fragmente, Duplikate und wechselnde Anzahl werden verworfen. Fragment 0 beginnt eine neue Übertragung. Nach drei Sekunden ohne Folgedaten oder Disconnect wird der unvollständige Empfang zurückgesetzt.
 

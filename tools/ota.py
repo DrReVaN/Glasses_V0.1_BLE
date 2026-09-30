@@ -16,7 +16,10 @@ async def update(args,image,info):
     if device is None: raise RuntimeError("Device not found; disconnect the Android app and wake the glasses.")
     async with BleakClient(device,pair=True,timeout=60,winrt={"use_cached_services":False}) as client:
         version=await client.read_gatt_char(FW)
-        if len(version)!=4 or version[:3]!=bytes([0,2,0]): raise RuntimeError("Unsupported firmware/protocol version")
+        if len(version) not in (4,20) or version[:3]!=bytes([0,2,0]): raise RuntimeError("Unsupported BLE protocol")
+        if len(version)==20:
+            if version[10:12]!=bytes([1,0]): raise RuntimeError("Unsupported OTA protocol")
+            print("Installed firmware: " + '.'.join(map(str,struct.unpack('<HHH',version[4:10]))))
         if args.enter:
             if version[3]==1: print("Already in bootloader mode."); return
             await client.write_gatt_char(CONTROL,b"OTA1",response=True)

@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "target": "STM32WB35CE",
+  "address": "0x8010000",
+  "size": 35676,
+  "crc32": "c46f1751",
+  "sha256": "0a83823a101f77a41048a1f020ce46e6cd29c149104a56febe2e66f6ce9bfb79",
+  "version": "0.2.0",
+  "profile": "application"
+}

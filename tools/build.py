@@ -9,6 +9,7 @@ import subprocess
 import sys
 import xml.etree.ElementTree as ET
 import zlib
+from version import current, validate_identity
 ROOT = Path(__file__).resolve().parents[1]
 def main():
     parser = argparse.ArgumentParser()
@@ -63,7 +64,9 @@ def main():
         binary = (out / "smartglasses.bin").read_bytes()
         manifest = {"format": 1, "target": "STM32WB35CE", "address": hex(0x08000000 + offset),
                     "size": len(binary), "crc32": f"{zlib.crc32(binary):08x}",
-                    "sha256": hashlib.sha256(binary).hexdigest(), "version": "0.2.0", "profile": profile}
+                    "sha256": hashlib.sha256(binary).hexdigest(), "version": current(), "profile": profile,
+                    "protocol": 1, "min_bootloader": "0.2.0"}
+        validate_identity(binary, manifest["version"], 1 if profile == "bootloader" else 0)
         (out / "smartglasses.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print("Both images built. See docs/OTA.md before first installation.")
 if __name__ == "__main__": main()

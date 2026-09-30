@@ -5,6 +5,9 @@ import json
 from pathlib import Path
 import struct
 import zlib
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from version import validate_identity
 def validate(binary, manifest):
     image = binary.read_bytes()
     info = json.loads(manifest.read_text())
@@ -14,6 +17,8 @@ def validate(binary, manifest):
         raise ValueError("Wrong image size")
     if hashlib.sha256(image).hexdigest() != info["sha256"] or zlib.crc32(image) != int(info["crc32"],16):
         raise ValueError("Image digest mismatch")
+    validate_identity(image, info.get("version"))
+    if info.get("protocol", 1) != 1: raise ValueError("Unsupported OTA protocol")
     sp, entry = struct.unpack_from("<II", image)
     if sp & 7 or not 0x20000008 < sp <= 0x20008000 or not entry & 1 or not 0x08010000 <= entry & ~1 < 0x08010000 + len(image):
         raise ValueError("Invalid application vector table")

@@ -25,6 +25,8 @@ Ausgangspunkt: Firmware-main `4b314ee3e5207037aa04d2b64c7a0a70b461ff6c`; App-mai
 | Löschfenster bei jedem Busy neu gestartet | CPU2-Löschfreigabe über Retries und alle Seiten aktiv gehalten; Bereinigung im Vordergrund vor Datenübertragung und nach Abbruch; kurze Bootloader-Verbindungsintervalle auf 80–100 ms angefragt |
 | RTC-Wartebedingung | WUTWF-Stabilisierung wiederhergestellt und im unerwarteten IRQ begrenzt; kein Wakeup-Start vor Timer-Server-Initialisierung |
 | Wartbarkeit/OTA | getrennte Core-/Hardwaremodule, GCC-Build, Keil-Targets, Linkergrenzen, Metadaten, eigener Updater, CI und Dokumentation |
+| Unterschiedliche Builds immer 0.2.0 | zentrale numerische Releaseversion, fester Versionsblock im Image, Manifestbindung und 20-Byte-Gerätekennung ohne verschobene GATT-Handles |
+| Updateprüfung und Rückwechsel | vollständige GitHub-Release-Paare, Auswahl/Bestätigung, geprüfter lokaler Cache, numerische Sortierung und Kontrolle der gestarteten Version/Größe/CRC |
 
 ## Am Rechner ausgeführt
 
