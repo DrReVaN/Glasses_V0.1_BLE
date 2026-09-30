@@ -8,6 +8,7 @@
 #define GLASSES_META_ADDRESS 0x0800F000u
 #define GLASSES_IMAGE_MAGIC 0x53475531u
 #define GLASSES_BOOT_REQUEST 0x4F544131u
+#define GLASSES_BOOT_APPLICATION 0x41505031u
 typedef struct { uint32_t size, crc, magic, format; } GlassesImage;
 void Glasses_OtaInit(void);
 void Glasses_OtaProcess(void);

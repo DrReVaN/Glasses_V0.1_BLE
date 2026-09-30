@@ -7,9 +7,16 @@
 extern I2C_HandleTypeDef hi2c1;
 extern RTC_HandleTypeDef hrtc;
 extern uint32_t glasses_fault[3], glasses_reset_flags;
-void Glasses_OtaReboot(void) {
+static bool boot_request_write(uint32_t request) {
+    /* Flush the APB-AHB bridge before accessing the backup domain, as in
+     * CubeWB Reset_BackupDomain. Read back the request before any reset. */
     HAL_PWR_EnableBkUpAccess();
-    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR6, GLASSES_BOOT_REQUEST);
+    HAL_PWR_EnableBkUpAccess();
+    HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR6, request);
+    return HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR6) == request;
+}
+void Glasses_OtaReboot(void) {
+    if (!boot_request_write(GLASSES_BOOT_REQUEST)) return;
     __DSB(); NVIC_SystemReset();
 }
 #ifdef SMARTGLASSES_BOOTLOADER
@@ -111,7 +118,13 @@ void Glasses_OtaProcess(void) {
         result = Glasses_FlashWrite(GLASSES_META_ADDRESS + 8 * metadata_word, word);
         if (result < 0) { reply(0x0E); return; }
         if (result) return;
-        if (++metadata_word == 2) { glasses_fault[0] = 0; reply(0); uploading = commit = false; rebooting = true; reboot_at = now + 500; }
+        if (++metadata_word == 2) {
+            /* This warm reset must launch the verified image, even if the
+             * separately powered touch controller still reports an old touch. */
+            if (!boot_request_write(GLASSES_BOOT_APPLICATION)) { reply(0x0E); return; }
+            glasses_fault[0] = 0; reply(0); uploading = commit = false;
+            rebooting = true; reboot_at = now + 500;
+        }
     }
 }
 /* Run before CPU2 is started. Never jump to an unverified or partial image. */
@@ -122,24 +135,37 @@ __asm static void jump_to_application(uint32_t sp, uint32_t entry) {
     BX r1
 }
 #endif
-#ifndef GLASSES_HOST_TEST
 void Glasses_BootTryApplication(void) {
     const GlassesImage *image = (const GlassesImage *)GLASSES_META_ADDRESS;
     uint32_t sp = *(const uint32_t *)GLASSES_APP_ADDRESS;
     uint32_t entry = *(const uint32_t *)(GLASSES_APP_ADDRESS + 4);
-    uint8_t pads = 0; unsigned i;
+    uint8_t pads = 0, fresh_pads = 0;
+    uint32_t request;
     HAL_PWR_EnableBkUpAccess();
-    if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR6) == GLASSES_BOOT_REQUEST) {
-        HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR6, 0); return;
+    request = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR6);
+    if (request == GLASSES_BOOT_REQUEST || request == GLASSES_BOOT_APPLICATION) {
+        if (!boot_request_write(0)) return;
+        if (request == GLASSES_BOOT_REQUEST) return;
     }
     if ((glasses_fault[0] == 0x53474631 && glasses_fault[1]) || (glasses_reset_flags & RCC_CSR_IWDGRSTF)) return;
-    if (CAP1203_Init(&hi2c1) == HAL_OK) {
-        HAL_Delay(100); /* Boot-only sensor settling, before CPU2/BLE is started. */
-        if (CAP1203_ReadTouch(&pads) == HAL_OK && (pads & 2)) return;
+    if (request != GLASSES_BOOT_APPLICATION && CAP1203_Init(&hi2c1) == HAL_OK) {
+        /* CAP1203 status can contain a released touch until INT is cleared.
+         * Its datasheet explicitly requires two polls to observe a release.
+         * Allow the first conversion (up to 200 ms), then confirm a held pad. */
+        HAL_Delay(200);
+        if (CAP1203_ReadTouch(&pads) == HAL_OK && (pads & 2)) {
+            HAL_Delay(200);
+            if (CAP1203_ReadTouch(&fresh_pads) == HAL_OK && (fresh_pads & 2)) return;
+        }
     }
     if (image->magic != GLASSES_IMAGE_MAGIC || image->format != 1 ||
         !glasses_image_vectors_valid(sp, entry, image->size) ||
         (glasses_crc32(0xFFFFFFFFu, (const uint8_t *)GLASSES_APP_ADDRESS, image->size) ^ 0xFFFFFFFFu) != image->crc) return;
+#ifdef GLASSES_HOST_TEST
+    extern void Glasses_HostJumpApplication(uint32_t sp, uint32_t entry);
+    Glasses_HostJumpApplication(sp, entry);
+#else
+    unsigned i;
     HAL_DeInit(); __disable_irq(); SysTick->CTRL = 0;
     for (i = 0; i < 8; ++i) { NVIC->ICER[i] = 0xFFFFFFFFu; NVIC->ICPR[i] = 0xFFFFFFFFu; }
     SCB->ICSR = SCB_ICSR_PENDSTCLR_Msk | SCB_ICSR_PENDSVCLR_Msk;
@@ -151,10 +177,8 @@ void Glasses_BootTryApplication(void) {
     __asm volatile ("msr msp, %0\n cpsie i\n bx %1" : : "r"(sp), "r"(entry) : "memory");
     __builtin_unreachable();
 #endif
-}
-#else
-void Glasses_BootTryApplication(void) {}
 #endif
+}
 #else
 void Glasses_OtaInit(void) {}
 void Glasses_OtaProcess(void) {}

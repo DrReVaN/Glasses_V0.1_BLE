@@ -19,6 +19,7 @@ Ausgangspunkt: Firmware-main `4b314ee3e5207037aa04d2b64c7a0a70b461ff6c`; App-mai
 | CAP1203-ALERT# | fallende Flanke und zusätzliche Statusabfrage; tatsächliche Boardpolarität noch messen |
 | OLED-Grenzen | gedrehte 64×128-Koordinaten begrenzt; Zeichen-/Fontgrenzen geprüft |
 | V1-Linsenbereich | ursprüngliche Uhr-/Datumspositionen und Zeichenabstände, BLE-Warteanzeige und erstes Lauftextbild wiederhergestellt; Pairing und OTA innerhalb der alten Inhaltsgrenzen |
+| OTA-Warmstart / Touch-Anwahl | einmaliger, zurückgelesener Anwendungsstartauftrag nach erfolgreichem Commit; manuelle Pad-2-Anwahl mit zwei Messungen; Bootentscheidung wird im Hosttest tatsächlich ausgeführt |
 | RTC-Wartebedingung | WUTWF-Stabilisierung wiederhergestellt und im unerwarteten IRQ begrenzt; kein Wakeup-Start vor Timer-Server-Initialisierung |
 | Wartbarkeit/OTA | getrennte Core-/Hardwaremodule, GCC-Build, Keil-Targets, Linkergrenzen, Metadaten, eigener Updater, CI und Dokumentation |
 
@@ -29,6 +30,7 @@ Ausgangspunkt: Firmware-main `4b314ee3e5207037aa04d2b64c7a0a70b461ff6c`; App-mai
 - BSS besitzt in beiden GCC-Linkern einen eigenen RAM-Segment-Eintrag. Unterschiedliche Daten-/BSS-Ausrichtung erzeugt dadurch keinen fehlerhaften Segment-Eintrag; Linkerwarnungen brechen den Build ab.
 - Portablen C-Empfänger, Uhr, Touch und CRC getestet, einschließlich 100.000 fehlerhafter Pakete. Die erste lokale Ausführung verwendete UndefinedBehaviorSanitizer.
 - Den tatsächlichen OTA-Empfänger mit simuliertem Flash ausgeführt: Busy/Retry, Größen-/Adressgrenzen, falscher Offset/Duplikat, Disconnect, CRC-Fehler, Schreibfehler, letzte unvollständige Doppelwortgruppe, abschließender Metadatenmarker und Timeout.
+- Den tatsächlichen Bootpfad ausgeführt: gewöhnlicher Start, gehaltenes Pad 2, gelöster/gespeicherter Touch-Zustand, einmalige OTA- und Anwendungsstartaufträge, beschädigte CRC, falsche Metadaten/Format/Länge/Vektoren, CPU-Fault/Watchdog und fehlgeschlagene RTC-Rückleseprüfung. Nach Commit bleibt der verzögerte Reset auch bei BLE-Disconnect aktiv; ein fehlgeschlagener Startauftrag meldet einen ATT-Fehler und löst keinen erfolgreichen OTA-Neustart aus.
 - Python-Paketvalidierung und Intel-HEX-Prüfsummen getestet; erzeugtes Installationsimage und OTA-Manifest geprüft.
 - Android-Debug-APK mit JDK 11, SDK 31 und Build Tools 30.0.3 gebaut; Gradle-Unit-Tests bestanden. Vorhandene Deprecated-/Unchecked-Hinweise stammen aus dem alten Android-Projekt.
 - Java-Framing und GATT-Queue ausgeführt: UTF-8-Grenzen, Serialisierung, begrenzte Versuche, Timeout, Disconnect und Wiederverbindung.
@@ -63,3 +65,5 @@ Die vom Besitzer bestätigte und fotografierte Controllerplatine ist **V1 mit ST
 10. Stromaufnahme bei verbundenem BLE, Advertising, OLED-an/-aus und OFF messen. CPU1-Sleep ist sicher vorbereitet; Stop/Standby und weitere Verbrauchsoptimierungen benötigen diese Messungen.
 
 Der Besitzer hat den vorherigen 0.2.0-Stand über Wemos/SWD installiert, ein erfolgreiches Verifikationslog gemeldet und nach Neustart ein Bild gesehen. Dabei wurde die Abweichung vom alten optischen Anzeigebereich festgestellt. Die anschließende V1-Displaykorrektur ist am Rechner geprüft; ihre Sichtbarkeit durch die konkrete Linse und ein realer BLE-OTA-Transfer sind noch an der Brille zu bestätigen. Die ursprüngliche Reset-Ursache ist trotz reparierter Codefehler nicht als auf Hardware nachgewiesen behoben zu bezeichnen.
+
+Am 30.09.2026 meldete der Besitzer nach einem OTA-Versuch weiterhin den Wiederherstellungsmodus mit `Reset: 14000000`, `Fehler: 0` und leeren Empfangsfehlerzählern. Nach vollständiger Versorgungstrennung startete die Anwendung und die App zeigte „Verbunden und bereit“. Damit ist die Anwendung nach einem Kaltstart startfähig. Welcher Rückkehrpfad des ursprünglichen Bootloaders den Warmstart verhindert hat, wurde nicht auf der MCU gemessen. Ein alter CAP1203-Touch-Zustand ist eine passende mögliche Ursache: laut [Microchip-Datenblatt, Abschnitte 4.8.2 und 5.2.2](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/00001572B.pdf) können zwei Abfragen erforderlich sein, um eine Freigabe zu erkennen. Die neue Startkorrektur ist am Rechner geprüft; zwei aufeinanderfolgende OTA-Transfers mit anschließendem automatischem Anwendungsstart müssen auf dieser Brille noch bestätigt werden.

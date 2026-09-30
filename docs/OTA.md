@@ -47,10 +47,14 @@ Auf macOS die vom Betriebssystem bereitgestellte Geräte-UUID verwenden. Falls d
 
 Der Client prüft Ziel, Adresse, Größe, SHA-256, CRC32 und Vektoren lokal. Jede Übertragung verwendet einen authentifizierten, verschlüsselten ATT Write Request und wartet auf die Antwort. Datenpakete enthalten den Byte-Offset; Duplikate und falsche Reihenfolge werden abgewiesen. Nach Erase/Schreiben prüft die Brille die CRC32 erneut und schreibt den Gültigkeitsmarker zuletzt. Erst danach bestätigt sie den Abschluss und startet neu.
 
+Nach dem Gültigkeitsmarker schreibt und liest der Bootloader den einmaligen RTC-Startauftrag `APP1` zurück, bevor er den Abschluss bestätigt. Der nächste Start verbraucht ihn, prüft Fehlerstatus, Vektoren, Metadaten und CRC erneut und überspringt ausschließlich die manuelle Touch-Anwahl. Ein Watchdog-/CPU-Fault oder ein ungültiges Image bleibt im Wiederherstellungsmodus. Bei fehlgeschlagener Rückleseprüfung wird kein erfolgreicher Abschluss gemeldet. `OTA1` bleibt der getrennte, ebenfalls einmalige Auftrag zum Öffnen des Bootloaders.
+
+Der ursprüngliche 0.2.0-Bootloader besitzt diesen Ablauf noch nicht. Ein Anwendungstransfer über BLE ersetzt ihn nicht. Zum Nachrüsten das vollständige Paket `ota-start-fix` über SWD installieren; siehe [Anleitung](OTA_START_UPDATE.md).
+
 ## Wiederherstellung und Grenzen
 
 - Abbruch, Stromausfall oder CRC-/Flash-Fehler vor dem abschließenden Marker lassen das neue Image ungültig. Der Bootloader bleibt für einen erneuten vollständigen Download erreichbar.
-- Pad 2 während eines MCU-Resets halten, um den Update-Modus manuell zu öffnen. Dies auf dem realen CAP1203 prüfen; bei Fehlern ist SWD weiterhin der Rückweg.
+- Pad 2 während eines MCU-Resets halten, um den Update-Modus manuell zu öffnen. Der Bootloader bestätigt die Berührung mit zwei Abfragen im Abstand von 200 ms nach einer anfänglichen Wartezeit von 200 ms. Ein erfolgreicher OTA-Neustart mit `APP1` startet die geprüfte Anwendung ohne diese Touch-Abfrage. Dies auf dem realen CAP1203 prüfen; bei Fehlern ist SWD weiterhin der Rückweg.
 - Ein aufgezeichneter CPU1-Fault oder Watchdog-Reset führt beim nächsten Start ebenfalls in den Bootloader. Ein erfolgreiches Update löscht den Fault-Marker.
 - Der Updater hat **einen Anwendungsslot**. Während des Updates steht die vorige Anwendung nicht zur Verfügung. Es gibt keinen automatischen Rücksprung auf die vorherige Version.
 - CRC32 und SHA-256 erkennen beschädigte Dateien. Es gibt **keine Firmware-Signatur und keinen Anti-Rollback-Zähler**. Ein physisch bestätigter, gebundener Besitzer darf die Anwendung ersetzen. Pakete deshalb aus einem vertrauenswürdigen Build beziehen.
