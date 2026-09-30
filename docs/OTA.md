@@ -1,5 +1,7 @@
 # OTA für STM32WB35CE
 
+Die bestätigte Brille ist eine **Controllerplatine V1 mit STM32WB35**. Die WB35CE-Beschriftung passt zum vorhandenen Firmware-Projekt. Der auf Hackster angebotene Controller-Schaltplan ist V2 und nennt einen WB55; er beschreibt nicht die bestätigte Bestückung. Die OLED-Ansteuerung des zuvor funktionierenden Firmwarestands bleibt erhalten. Vor Erstinstallation die vollständige MCU-Kennung und Flashgröße in STM32CubeProgrammer auslesen; siehe [Hardwareabgleich](HARDWARE.md).
+
 ## Speicheraufteilung
 
 | Bereich | Adresse | Größe / Zweck |

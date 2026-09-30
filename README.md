@@ -22,6 +22,7 @@ Das erzeugt zwei getrennte Images, Prüfsummen und `build/install.hex` für die 
 - [OTA, Speicheraufteilung und Erstinstallation](docs/OTA.md)
 - [BLE-Protokoll und Bedienung](docs/PROTOCOL.md)
 - [Tests, behobene Befunde und Hardwareabnahme](docs/VALIDATION.md)
+- [Bestückte V1-Hardware und Abgleich mit dem veröffentlichten V2-Schaltplan](docs/HARDWARE.md)
 - [Passende Android-App auf dem Dev-Branch](https://github.com/DrReVaN/SmartGlasses-App/tree/dev/firmware-fixes-ota)
 
 ## Quellcode und Build

@@ -77,14 +77,16 @@ static void render(void) {
     ssd1306_Fill(Black);
     if (pairing) {
         snprintf(line, sizeof(line), "%06lu", (unsigned long)pair_value);
-        ssd1306_SetCursor(5, 56); ssd1306_WriteString(line, Font_7x10, White);
-        ssd1306_SetCursor(2, 70); ssd1306_WriteString("1Yes3No", Font_7x10, White);
+        ssd1306_SetCursor(6, 56); ssd1306_WriteString(line, Font_6x8, White);
+        ssd1306_SetCursor(2, 68); ssd1306_WriteString("1Yes3No", Font_6x8, White);
     } else if (ota_requested) {
         ssd1306_SetCursor(8, 56); ssd1306_WriteString("OTA?", Font_7x10, White);
-        ssd1306_SetCursor(2, 70); ssd1306_WriteString("1Yes3No", Font_7x10, White);
+        ssd1306_SetCursor(2, 68); ssd1306_WriteString("1Yes3No", Font_6x8, White);
     } else if (message[0]) {
-        char window[8] = {0}; size_t n = strlen(message), i;
-        for (i = 0; i < 7 && scroll + i < n; ++i) window[i] = message[scroll + i];
+        /* Keep the five-character window used by the working V1 firmware.
+         * The RAM dimensions do not identify the panel's visible area. */
+        char window[6] = {0}; size_t n = strlen(message), i;
+        for (i = 0; i < 5 && scroll + i < n; ++i) window[i] = message[scroll + i];
         ssd1306_SetCursor(4, 61); ssd1306_WriteString(window, Font_7x10, White);
     } else {
 #ifdef SMARTGLASSES_BOOTLOADER

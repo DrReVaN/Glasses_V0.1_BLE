@@ -55,7 +55,7 @@ def main():
         elf = out / "smartglasses.elf"
         subprocess.run([gcc] + options + objects + [
             "-T" + str(ROOT / ("GCC/" + profile + ".ld")), "--specs=nano.specs", "--specs=nosys.specs",
-            "-Wl,--gc-sections", "-Wl,-Map=" + str(out / "smartglasses.map"), "-Wl,--print-memory-usage",
+            "-Wl,--gc-sections", "-Wl,--fatal-warnings", "-Wl,-Map=" + str(out / "smartglasses.map"), "-Wl,--print-memory-usage",
             "-lm", "-o", str(elf)], check=True)
         for fmt, extension in (("binary", "bin"), ("ihex", "hex")):
             subprocess.run([objcopy, "-O", fmt, str(elf), str(out / ("smartglasses." + extension))], check=True)

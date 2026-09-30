@@ -9,6 +9,7 @@ PHDRS {
  flash PT_LOAD FLAGS(5);
  ramcode PT_LOAD FLAGS(5);
  ram PT_LOAD FLAGS(6);
+ bss PT_LOAD FLAGS(6);
  shared PT_LOAD FLAGS(6);
  retain PT_LOAD FLAGS(6);
 }
@@ -26,7 +27,8 @@ SECTIONS {
  _sishared = LOADADDR(.shared);
  _sidata = LOADADDR(.data);
  .data : { . = ALIGN(4); _sdata = .; *(.data*) *(SYSTEM_DRIVER_CONTEXT) . = ALIGN(4); _edata = .; } > RAM AT> FLASH :ram
- .bss (NOLOAD) : { . = ALIGN(4); _sbss = .; *(.bss*) *(COMMON) *(BLE_APP_CONTEXT) *(BLE_DRIVER_CONTEXT) *(TIMERSERVER_CONTEXT) . = ALIGN(4); _ebss = .; } > RAM :ram
+ /* BSS has its own RAM-only segment; input alignment must not change .data's flash load mapping. */
+ .bss (NOLOAD) : AT(ADDR(.bss)) { . = ALIGN(4); _sbss = .; *(.bss*) *(COMMON) *(BLE_APP_CONTEXT) *(BLE_DRIVER_CONTEXT) *(TIMERSERVER_CONTEXT) . = ALIGN(4); _ebss = .; } > RAM :bss
  .noinit (NOLOAD) : { *(.noinit*) } > RETAIN :retain
  .shared : { . = ALIGN(4); _sshared = .; KEEP(*(MAPPING_TABLE)) *(MB_MEM1) *(MB_MEM2) . = ALIGN(4); _eshared = .; } > SHARED AT> FLASH :shared
  .heap_stack (NOLOAD) : { . = ALIGN(8); PROVIDE(end = .); PROVIDE(_end = .); . += 512; PROVIDE(_heap_limit = .); . += 2048; } > RAM :NONE

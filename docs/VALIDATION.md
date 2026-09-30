@@ -24,6 +24,8 @@ Ausgangspunkt: Firmware-main `4b314ee3e5207037aa04d2b64c7a0a70b461ff6c`; App-mai
 ## Am Rechner ausgeführt
 
 - Beide ARM-Images mit Arm GNU Toolchain **13.2.1** übersetzt und gelinkt; am Ende ohne Compiler-/Linkerwarnungen.
+- OLED-Befehlsfolge, Bildschirmtransfer, SPI-Konfiguration, Spiegelung und Puffergröße mit dem zuvor funktionierenden main-Stand verglichen; diese Hardwareparameter sind unverändert. Neue Bestätigungstexte sind kompakter und der Lauftext verwendet wieder fünf Zeichen pro Fenster.
+- BSS besitzt in beiden GCC-Linkern einen eigenen RAM-Segment-Eintrag. Unterschiedliche Daten-/BSS-Ausrichtung erzeugt dadurch keinen fehlerhaften Segment-Eintrag; Linkerwarnungen brechen den Build ab.
 - Portablen C-Empfänger, Uhr, Touch und CRC getestet, einschließlich 100.000 fehlerhafter Pakete. Die erste lokale Ausführung verwendete UndefinedBehaviorSanitizer.
 - Den tatsächlichen OTA-Empfänger mit simuliertem Flash ausgeführt: Busy/Retry, Größen-/Adressgrenzen, falscher Offset/Duplikat, Disconnect, CRC-Fehler, Schreibfehler, letzte unvollständige Doppelwortgruppe, abschließender Metadatenmarker und Timeout.
 - Python-Paketvalidierung und Intel-HEX-Prüfsummen getestet; erzeugtes Installationsimage und OTA-Manifest geprüft.
@@ -43,6 +45,8 @@ python tools/ota.py build/application/smartglasses.bin --check
 Der Sanitizer-Aufruf ist für Linux/GCC gedacht; auf Windows kann `--cc "zig cc"` ohne AddressSanitizer verwendet werden. Die Tests führen den C-Code aus und ersetzen keine Messungen an der MCU.
 
 ## Hardwareabnahme vor Alltagsbetrieb
+
+Die vom Besitzer bestätigte und fotografierte Controllerplatine ist **V1 mit STM32WB35**. Der zuvor funktionierende OLED-Code dient als Kompatibilitätsreferenz; die sichtbare Panelauflösung wurde nicht identifiziert. Der veröffentlichte V2-Schaltplan ist daher keine vollständige Verifikation dieser V1-Platine. Details und unveränderte Displayparameter stehen im [Hardwareabgleich](HARDWARE.md).
 
 1. Startup, CPU2-Stack, LSE-Anlauf, Timer-Server und Uhr über mehrere Disconnects sowie Tages-/Monatswechsel prüfen.
 2. OLED-Drehung, Reset-Puls und Versorgung messen; alle Anzeige-/OFF-/ON-Abläufe wiederholt testen.
