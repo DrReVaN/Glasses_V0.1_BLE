@@ -11,6 +11,7 @@
 #define GLASSES_BOOT_APPLICATION 0x41505031u
 typedef struct { uint32_t size, crc, magic, format; } GlassesImage;
 void Glasses_OtaInit(void);
+void Glasses_OtaPrepareConnection(uint16_t conn, uint16_t interval);
 void Glasses_OtaProcess(void);
 void Glasses_OtaDisconnected(void);
 void Glasses_OtaReboot(void);
@@ -19,5 +20,8 @@ void Glasses_BootTryApplication(void);
 bool Glasses_FlashInit(void);
 /* 0 done, 1 busy: retry from foreground, -1 hardware error. */
 int Glasses_FlashErase(uint32_t address);
+/* Keep erase activity enabled across retries/pages. End it from foreground
+ * before writes, or after an aborted erase. Returns 0/1/-1 like Erase. */
+int Glasses_FlashEndErase(void);
 int Glasses_FlashWrite(uint32_t address, uint64_t data);
 #endif

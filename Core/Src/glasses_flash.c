@@ -7,10 +7,18 @@
 #include "shci.h"
 #include "ble.h"
 #include <string.h>
-static bool flash_ready;
+static bool flash_ready, erase_active;
 bool Glasses_FlashInit(void) {
     flash_ready = SHCI_C2_SetFlashActivityControl(FLASH_ACTIVITY_CONTROL_SEM7) == SHCI_Success;
     return flash_ready;
+}
+int Glasses_FlashEndErase(void) {
+    if (!erase_active) return 0;
+    if (LL_HSEM_1StepLock(HSEM, CFG_HW_FLASH_SEMID)) return 1;
+    SHCI_CmdStatus_t status = SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_OFF);
+    if (status == SHCI_Success) erase_active = false;
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_FLASH_SEMID, 0);
+    return status == SHCI_Success ? 0 : -1;
 }
 static bool writable(uint32_t address) {
     uint32_t sfsa = (FLASH->SFR & FLASH_SFR_SFSA) >> FLASH_SFR_SFSA_Pos;
@@ -22,10 +30,14 @@ static int operation(uint32_t address, uint64_t data, bool erase) {
     uint32_t primask, page_error;
     FLASH_EraseInitTypeDef page = {0};
     if (!flash_ready || !writable(address) || (address & (erase ? FLASH_PAGE_SIZE - 1u : 7u))) return -1;
+    if (!erase && erase_active) return 1;
     if (LL_FLASH_IsActiveFlag_OperationSuspended() || __HAL_FLASH_GET_FLAG(FLASH_FLAG_CFGBSY)) return 1;
     if (LL_HSEM_1StepLock(HSEM, CFG_HW_FLASH_SEMID)) return 1;
-    if (erase && SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_ON) != SHCI_Success) {
-        LL_HSEM_ReleaseLock(HSEM, CFG_HW_FLASH_SEMID, 0); return -1;
+    if (erase && !erase_active) {
+        if (SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_ON) != SHCI_Success) {
+            LL_HSEM_ReleaseLock(HSEM, CFG_HW_FLASH_SEMID, 0); return -1;
+        }
+        erase_active = true;
     }
     /* Let CPU2 take SEM7 after erase activity notification (at least 5 us). */
     if (erase) { volatile unsigned i; for (i = 0; i < 70; ++i) __NOP(); }
@@ -34,8 +46,9 @@ static int operation(uint32_t address, uint64_t data, bool erase) {
         LL_HSEM_GetStatus(HSEM, CFG_HW_BLOCK_FLASH_REQ_BY_CPU1_SEMID) ||
         LL_HSEM_1StepLock(HSEM, CFG_HW_BLOCK_FLASH_REQ_BY_CPU2_SEMID)) {
         __set_PRIMASK(primask);
-        bool cleanup_ok = !erase || SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_OFF) == SHCI_Success;
-        LL_HSEM_ReleaseLock(HSEM, CFG_HW_FLASH_SEMID, 0); return cleanup_ok ? 1 : -1;
+        /* CPU2 takes SEM7 until a later radio event. Keep ON across retries:
+         * another ON/OFF pair would re-arm protection before we can use it. */
+        LL_HSEM_ReleaseLock(HSEM, CFG_HW_FLASH_SEMID, 0); return 1;
     }
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
     status = HAL_FLASH_Unlock();
@@ -49,7 +62,6 @@ static int operation(uint32_t address, uint64_t data, bool erase) {
     if (HAL_FLASH_Lock() != HAL_OK) status = HAL_ERROR;
     LL_HSEM_ReleaseLock(HSEM, CFG_HW_BLOCK_FLASH_REQ_BY_CPU2_SEMID, 0);
     __set_PRIMASK(primask);
-    if (erase && SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_OFF) != SHCI_Success) status = HAL_ERROR;
     LL_HSEM_ReleaseLock(HSEM, CFG_HW_FLASH_SEMID, 0);
     if (status != HAL_OK) return -1;
     if (!erase && *(const uint64_t *)address != data) return -1;
@@ -77,6 +89,13 @@ void Glasses_SecurityKeys(uint8_t irk[16], uint8_t erk[16]) {
         if (!result) break;
         if (result < 0 || (uint32_t)(HAL_GetTick() - start) >= 2000) Glasses_Fatal(8);
         HAL_Delay(1); /* One-time provisioning, before advertising/pairing. */
+    }
+    start = HAL_GetTick();
+    for (;;) {
+        int result = Glasses_FlashEndErase();
+        if (!result) break;
+        if (result < 0 || (uint32_t)(HAL_GetTick() - start) >= 2000) Glasses_Fatal(8);
+        HAL_Delay(1);
     }
     for (i = 0; i < 5; ++i) {
         start = HAL_GetTick();

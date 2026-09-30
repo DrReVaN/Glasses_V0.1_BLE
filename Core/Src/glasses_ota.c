@@ -20,6 +20,12 @@ void Glasses_OtaReboot(void) {
     __DSB(); NVIC_SystemReset();
 }
 #ifdef SMARTGLASSES_BOOTLOADER
+void Glasses_OtaPrepareConnection(uint16_t conn, uint16_t interval) {
+    /* CPU2 permits an erase only with at least 25 ms of RF idle. A short
+     * phone-selected interval can otherwise keep SEM7 locked indefinitely.
+     * Request 80-100 ms once when connecting; the phone negotiates the result. */
+    if (interval < 64) (void)aci_l2cap_connection_parameter_update_req(conn, 64, 80, 0, 400);
+}
 static uint32_t expected_size, expected_crc, received, erase_page, verify_at, crc, last;
 static uint32_t reboot_at;
 static uint16_t pending_conn, pending_attr;
@@ -67,7 +73,11 @@ void Glasses_OtaProcess(void) {
     uint32_t now = HAL_GetTick();
     if (rebooting) { if ((int32_t)(now - reboot_at) >= 0) NVIC_SystemReset(); return; }
     if (uploading && (uint32_t)(now - last) >= 10000) { if (request_pending) reply(0x0E); Glasses_OtaDisconnected(); }
-    if (!request_pending) return;
+    if (!request_pending) {
+        /* Disconnect/timeout callbacks only mark cancellation. The CPU2
+         * cleanup command runs here, outside the BLE event handler. */
+        (void)Glasses_FlashEndErase(); return;
+    }
     if (pending_kind == 1) {
         uint32_t end = GLASSES_APP_ADDRESS + ((expected_size + FLASH_PAGE_SIZE - 1) / FLASH_PAGE_SIZE) * FLASH_PAGE_SIZE;
         if (erase_manifest) {
@@ -82,7 +92,10 @@ void Glasses_OtaProcess(void) {
             if (!result) erase_page += FLASH_PAGE_SIZE;
             return;
         }
-        reply(0); return;
+        result = Glasses_FlashEndErase();
+        if (result < 0) reply(0x0E);
+        else if (!result) reply(0);
+        return;
     }
     if (pending_kind == 2) {
         if (word_used == 8) {
@@ -180,6 +193,7 @@ void Glasses_BootTryApplication(void) {
 #endif
 }
 #else
+void Glasses_OtaPrepareConnection(uint16_t conn, uint16_t interval) { (void)conn; (void)interval; }
 void Glasses_OtaInit(void) {}
 void Glasses_OtaProcess(void) {}
 void Glasses_OtaDisconnected(void) {}

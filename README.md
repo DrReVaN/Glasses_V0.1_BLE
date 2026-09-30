@@ -10,6 +10,8 @@ Die anschließende OTA-Startkorrektur (`ota-start-fix`) schreibt nach dem geprü
 
 **Vor der Verwendung einmal Bootloader und Anwendung über ST-Link installieren.** Der alte Firmwarestand allein kann noch kein OTA. Diese Implementierung wurde gebaut und am Rechner getestet; die Hardwareabnahme steht aus.
 
+Die aktuelle OTA-Löschkorrektur (`ota-erase-fix`) hält die CPU2-Löschfreigabe während blockierter Versuche und aller Seiten aktiv und beendet sie vor der Datenübertragung. Der bisherige ON/OFF-Wechsel bei jedem Versuch konnte die Freigabe immer wieder verzögern. Kurze Bootloader-Verbindungsintervalle werden auf 80–100 ms angefragt. OTA-Empfänger und Produktions-Flash-Treiber werden hierfür gemeinsam mit einer zeitversetzten CPU2-Freigabe getestet. Auch diese Bootloader-Korrektur wird einmal per Wemos/SWD installiert.
+
 ## Einstieg
 
 1. Arm GNU Toolchain **13.2.Rel1** (GCC 13.2.1) und Python 3.10+ bereitstellen.
@@ -29,6 +31,7 @@ Das erzeugt zwei getrennte Images, Prüfsummen und `build/install.hex` für die 
 - [Bestückte V1-Hardware und Abgleich mit dem veröffentlichten V2-Schaltplan](docs/HARDWARE.md)
 - [V1-Displaykorrektur mit dem vorbereiteten Wemos installieren](docs/DISPLAY_UPDATE.md)
 - [OTA-Startkorrektur mit dem vorbereiteten Wemos installieren](docs/OTA_START_UPDATE.md)
+- [Aktuelle OTA-Löschkorrektur mit dem vorbereiteten Wemos installieren](docs/OTA_ERASE_UPDATE.md)
 - [Passende Android-App auf dem Dev-Branch](https://github.com/DrReVaN/SmartGlasses-App/tree/dev/firmware-fixes-ota)
 
 ## Quellcode und Build

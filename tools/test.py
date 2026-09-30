@@ -25,7 +25,8 @@ def main():
                     str(ROOT/"MDK-ARM/ssd1306_fonts.c"), "-lm"]
         if name=="flash":
             cmd = shlex.split(args.cc) + ["-I"+str(ROOT/"tests/flash")] + cmd[len(shlex.split(args.cc)):]
-            cmd += ["-Wno-int-to-pointer-cast", "-D_GNU_SOURCE", str(ROOT/"Core/Src/glasses_flash.c")]
+            cmd += ["-Wno-int-to-pointer-cast", "-D_GNU_SOURCE", "-DSMARTGLASSES_BOOTLOADER", "-DGLASSES_HOST_TEST",
+                    str(ROOT/"Core/Src/glasses_flash.c"), str(ROOT/"Core/Src/glasses_ota.c")]
         subprocess.run(cmd+["-o",str(exe)],check=True)
         subprocess.run([str(exe)],check=True)
 if __name__=="__main__":main()

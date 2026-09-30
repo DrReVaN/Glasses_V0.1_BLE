@@ -57,6 +57,10 @@ int Glasses_FlashWrite(uint32_t address,uint64_t data) {
     for(unsigned i=0;i<8;++i){uint8_t b=((uint8_t *)&data)[i];assert((p[i]&b)==b);p[i]=b;}
     ++writes;return 0;
 }
+int Glasses_FlashEndErase(void) { return 0; }
+int aci_l2cap_connection_parameter_update_req(uint16_t conn, uint16_t min, uint16_t max, uint16_t latency, uint16_t timeout) {
+    (void)conn; (void)min; (void)max; (void)latency; (void)timeout; return 0;
+}
 void Glasses_OtaWrite(uint8_t kind,uint16_t conn,uint16_t attr,const uint8_t *data,uint8_t len);
 static void drain(void) {
     unsigned initial=responses;

@@ -453,7 +453,9 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification( void *pckt )
           handleNotification.ConnectionHandle = BleApplicationContext.BleApplicationContext_legacy.connectionHandle;
           Custom_APP_Notification(&handleNotification);
           /* USER CODE BEGIN HCI_EVT_LE_CONN_COMPLETE */
-
+          if (connection_complete_event->Status == BLE_STATUS_SUCCESS)
+            Glasses_OtaPrepareConnection(connection_complete_event->Connection_Handle,
+                                         connection_complete_event->Conn_Interval);
           /* USER CODE END HCI_EVT_LE_CONN_COMPLETE */
         }
         break; /* HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE */
