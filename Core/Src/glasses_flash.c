@@ -7,6 +7,11 @@
 #include "shci.h"
 #include "ble.h"
 #include <string.h>
+static bool flash_ready;
+bool Glasses_FlashInit(void) {
+    flash_ready = SHCI_C2_SetFlashActivityControl(FLASH_ACTIVITY_CONTROL_SEM7) == SHCI_Success;
+    return flash_ready;
+}
 static bool writable(uint32_t address) {
     uint32_t sfsa = (FLASH->SFR & FLASH_SFR_SFSA) >> FLASH_SFR_SFSA_Pos;
     return address >= GLASSES_KEYS_ADDRESS && address < GLASSES_APP_LIMIT &&
@@ -16,7 +21,7 @@ static int operation(uint32_t address, uint64_t data, bool erase) {
     HAL_StatusTypeDef status;
     uint32_t primask, page_error;
     FLASH_EraseInitTypeDef page = {0};
-    if (!writable(address) || (address & (erase ? FLASH_PAGE_SIZE - 1u : 7u))) return -1;
+    if (!flash_ready || !writable(address) || (address & (erase ? FLASH_PAGE_SIZE - 1u : 7u))) return -1;
     if (LL_FLASH_IsActiveFlag_OperationSuspended() || __HAL_FLASH_GET_FLAG(FLASH_FLAG_CFGBSY)) return 1;
     if (LL_HSEM_1StepLock(HSEM, CFG_HW_FLASH_SEMID)) return 1;
     if (erase && SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_ON) != SHCI_Success) {
@@ -29,8 +34,8 @@ static int operation(uint32_t address, uint64_t data, bool erase) {
         LL_HSEM_GetStatus(HSEM, CFG_HW_BLOCK_FLASH_REQ_BY_CPU1_SEMID) ||
         LL_HSEM_1StepLock(HSEM, CFG_HW_BLOCK_FLASH_REQ_BY_CPU2_SEMID)) {
         __set_PRIMASK(primask);
-        if (erase) SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_OFF);
-        LL_HSEM_ReleaseLock(HSEM, CFG_HW_FLASH_SEMID, 0); return 1;
+        bool cleanup_ok = !erase || SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_OFF) == SHCI_Success;
+        LL_HSEM_ReleaseLock(HSEM, CFG_HW_FLASH_SEMID, 0); return cleanup_ok ? 1 : -1;
     }
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_OPTVERR);
     status = HAL_FLASH_Unlock();
@@ -41,10 +46,10 @@ static int operation(uint32_t address, uint64_t data, bool erase) {
         } else status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, address, data);
     }
     /* The watchdog resets into recovery if stalled flash hardware never returns. */
-    HAL_FLASH_Lock();
+    if (HAL_FLASH_Lock() != HAL_OK) status = HAL_ERROR;
     LL_HSEM_ReleaseLock(HSEM, CFG_HW_BLOCK_FLASH_REQ_BY_CPU2_SEMID, 0);
     __set_PRIMASK(primask);
-    if (erase) SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_OFF);
+    if (erase && SHCI_C2_FLASH_EraseActivity(ERASE_ACTIVITY_OFF) != SHCI_Success) status = HAL_ERROR;
     LL_HSEM_ReleaseLock(HSEM, CFG_HW_FLASH_SEMID, 0);
     if (status != HAL_OK) return -1;
     if (!erase && *(const uint64_t *)address != data) return -1;

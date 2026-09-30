@@ -15,6 +15,8 @@ void Glasses_OtaProcess(void);
 void Glasses_OtaDisconnected(void);
 void Glasses_OtaReboot(void);
 void Glasses_BootTryApplication(void);
+/* Configure CPU2 timing protection before BLE/key provisioning. Fail closed. */
+bool Glasses_FlashInit(void);
 /* 0 done, 1 busy: retry from foreground, -1 hardware error. */
 int Glasses_FlashErase(uint32_t address);
 int Glasses_FlashWrite(uint32_t address, uint64_t data);

@@ -14,7 +14,7 @@ def main():
     common=shlex.split(args.cc)+["-std=c99","-Wall","-Wextra","-Werror","-I"+str(ROOT/"tests/stubs"),"-I"+str(ROOT/"Core/Inc")]
     if args.sanitize:common+=["-fsanitize=address,undefined","-fno-sanitize-recover=all"]
     suffix=".exe" if sys.platform=="win32" else ""
-    for name in ("core","ota","display"):
+    for name in ("core","ota","display","flash"):
         exe=out/("test_"+name+suffix)
         cmd=common+["-I"+str(ROOT/"tests/stubs"),str(ROOT/"Core/Src/glasses_core.c"),str(ROOT/("tests/test_"+name+".c"))]
         if name=="ota":
@@ -23,6 +23,9 @@ def main():
             cmd += ["-I"+str(ROOT/"tests/display"), "-I"+str(ROOT/"MDK-ARM/RTE"),
                     str(ROOT/"Core/Src/glasses_display.c"), str(ROOT/"MDK-ARM/ssd1306.c"),
                     str(ROOT/"MDK-ARM/ssd1306_fonts.c"), "-lm"]
+        if name=="flash":
+            cmd = shlex.split(args.cc) + ["-I"+str(ROOT/"tests/flash")] + cmd[len(shlex.split(args.cc)):]
+            cmd += ["-Wno-int-to-pointer-cast", "-D_GNU_SOURCE", str(ROOT/"Core/Src/glasses_flash.c")]
         subprocess.run(cmd+["-o",str(exe)],check=True)
         subprocess.run([str(exe)],check=True)
 if __name__=="__main__":main()

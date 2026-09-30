@@ -35,7 +35,8 @@
 
 /* Private includes -----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "glasses_ota.h"
+#include "glasses_app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -481,6 +482,10 @@ static void APPE_SysEvtReadyProcessing( void * pPayload )
     config_param.RevisionID = RevisionID;
     (void)SHCI_C2_Config(&config_param);
 
+    /* Match CubeWB BLE_Ota: CPU2 must protect flash timing through SEM7,
+     * before BLE and key provisioning. Its default PESD protection can keep
+     * a foreground-only flash driver busy before the first erase. */
+    if (!Glasses_FlashInit()) { Glasses_Fatal(11); return; }
     APP_BLE_Init( );
     UTIL_LPM_SetOffMode(1U << CFG_LPM_APP, UTIL_LPM_ENABLE);
   }
