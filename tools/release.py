@@ -18,8 +18,23 @@ def run(*args):
     if args[0]=='git': args=('git','-c','safe.directory='+ROOT.as_posix(),*args[1:])
     return subprocess.check_output(args,text=True,cwd=ROOT).strip()
 
+def source_commit():
+    head=run('git','rev-parse','HEAD')
+    tag='v'+current()
+    refs=run('git','ls-remote','--tags','origin','refs/tags/'+tag,'refs/tags/'+tag+'^{}').splitlines()
+    if not refs: return head
+    source=next((line.split()[0] for line in refs if line.endswith('^{}')),refs[0].split()[0])
+    if source!=head:
+        run('git','fetch','--no-tags','origin',source)
+        changed=run('git','diff','--name-only',source,head).splitlines()
+        # A publisher repair must not reassign an already allocated firmware
+        # version. All firmware/build inputs still have to match its tag.
+        if any(p not in {'tools/release.py','tests/test_release.py'} for p in changed):
+            raise ValueError('Tagged firmware inputs changed; increment version')
+    return source
+
 def prepare():
-    commit=run('git','rev-parse','HEAD')
+    commit=source_commit()
     packages=[(ROOT/'build/application/smartglasses.bin',ROOT/'build/application/smartglasses.json',commit),
               (ROOT/'releases/legacy/Smartglasses-0.2.0-OTA.bin',ROOT/'releases/legacy/Smartglasses-0.2.0-OTA.json',LEGACY_COMMIT)]
     for binary,manifest,source in packages:
@@ -53,7 +68,19 @@ def prepare():
         (out/'SHA256SUMS.txt').write_text(''.join(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.name+'\n' for p in assets if p.name!='SHA256SUMS.txt'))
         print(f'Prepared v{version}: {len(image)} bytes, {source}')
 
-def api(path): return json.loads(run('gh','api',path))
+def api(path):
+    try: return json.loads(run('gh','api',path))
+    except subprocess.CalledProcessError:
+        # GitHub's by-tag endpoint returns only published releases; drafts
+        # remain visible to this authenticated publisher in the collection.
+        if '/releases/tags/' not in path: raise
+        base,tag=path.split('/tags/',1)
+        for page in range(1,4):
+            releases=json.loads(run('gh','api',base+f'?per_page=100&page={page}'))
+            for release in releases:
+                if release['tag_name']==tag: return release
+            if len(releases)<100: break
+        raise
 
 def publish():
     repository=os.environ['GITHUB_REPOSITORY']

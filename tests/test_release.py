@@ -83,4 +83,26 @@ class ReleaseTests(unittest.TestCase):
                 with self.assertRaises(ValueError): release.publish()
                 self.assertFalse(state['draft'])
 
+    def test_draft_lookup_uses_authenticated_release_collection(self):
+        draft={'tag_name':'v0.3.0','draft':True,'assets':[],'id':7}
+        def run(*args):
+            if '/releases/tags/' in args[-1]: raise subprocess.CalledProcessError(1,['gh','api'])
+            self.assertEqual(args[-1],'repos/DrReVaN/Glasses_V0.1_BLE/releases?per_page=100&page=1')
+            return json.dumps([draft])
+        with patch.object(release,'run',run):
+            self.assertEqual(release.api('repos/DrReVaN/Glasses_V0.1_BLE/releases/tags/v0.3.0'),draft)
+
+    def test_publisher_repair_keeps_existing_firmware_tag_identity(self):
+        state={'changed':'tools/release.py\ntests/test_release.py'}
+        def run(*args):
+            if args[1]=='rev-parse': return '2'*40
+            if args[1]=='ls-remote': return '1'*40+'\trefs/tags/v0.3.0'
+            if args[1]=='diff': return state['changed']
+            self.assertEqual(args[1:3],('fetch','--no-tags'))
+            return ''
+        with patch.object(release,'run',run),patch.object(release,'current',lambda:'0.3.0'):
+            self.assertEqual(release.source_commit(),'1'*40)
+            state['changed']='Core/Src/glasses_core.c'
+            with self.assertRaises(ValueError): release.source_commit()
+
 if __name__=='__main__': unittest.main()
