@@ -58,7 +58,7 @@ def api(path): return json.loads(run('gh','api',path))
 def publish():
     repository=os.environ['GITHUB_REPOSITORY']
     if repository!='DrReVaN/Glasses_V0.1_BLE': raise ValueError('Wrong repository')
-    for folder in sorted((ROOT/'build/releases').iterdir(),key=lambda p:parse(p.name[1:])):
+    for folder in sorted((ROOT/'build/releases').iterdir(),key=lambda p:parse(p.name[1:]),reverse=True):
         tag=folder.name; name='Smartglasses-'+tag[1:]+'-OTA'
         info=json.loads((folder/(name+'.json')).read_text()); source=info['source_commit']
         if info['version']!=tag[1:] or len(source)!=40 or any(c not in '0123456789abcdef' for c in source):
@@ -71,8 +71,6 @@ def publish():
             subprocess.run(['git','push','origin','refs/tags/'+tag],check=True)
         else:
             resolved=next((line.split()[0] for line in refs if line.endswith('^{}')),refs[0].split()[0])
-            # Same binary may be revalidated after a documentation-only change;
-            # the original tag/source metadata still remain immutable.
             if resolved!=source: raise ValueError('Version tag already belongs to another commit; increment version')
         path='repos/'+repository+'/releases/tags/'+tag
         try: release=api(path)
@@ -80,6 +78,14 @@ def publish():
             subprocess.run(['gh','release','create',tag,'--verify-tag','--draft','--prerelease',
                             '--title','Smartglasses '+tag[1:], '--notes-file',str(folder/'Release-Notes.md')],check=True)
             release=api(path)
+        # The owner can create an empty historical release through GitHub when
+        # GITHUB_TOKEN cannot tag a different workflow revision. Hide it again
+        # before uploading; any release with assets remains immutable.
+        if not release['draft'] and not release['assets']:
+            subprocess.run(['gh','release','edit',tag,'--draft=true'],check=True)
+            release=api(path)
+            if not release['draft'] or release['assets']:
+                raise ValueError('Empty release could not be safely prepared')
         existing={a['name']:a for a in release['assets']}
         for asset in sorted(folder.iterdir()):
             if not asset.is_file(): continue

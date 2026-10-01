@@ -61,4 +61,26 @@ class ReleaseTests(unittest.TestCase):
                 with self.assertRaises(ValueError): release.publish()
                 run.assert_not_called();api.assert_not_called()
 
+    def test_empty_owner_release_is_hidden_before_uploading(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);folder=self.fixture(root)
+            state={'draft':False,'assets':[]};commands=[]
+            def run(*args): return '1'*40+'\trefs/tags/v0.3.0'
+            def call(args,**kwargs):
+                commands.append(args)
+                if args[:3]==['gh','release','edit']:
+                    if args[-1]=='--draft=true': state['draft']=True
+                    else:
+                        self.assertEqual(len(state['assets']),3);state['draft']=False
+                elif args[:3]==['gh','release','upload']:
+                    self.assertTrue(state['draft'])
+                    p=Path(args[-1]);state['assets'].append({'name':p.name,'digest':'sha256:'+hashlib.sha256(p.read_bytes()).hexdigest()})
+            with patch.object(release,'ROOT',root),patch.object(release,'run',run),patch.object(release,'api',lambda path:state),patch.object(release.subprocess,'run',call),patch.dict(release.os.environ,{'GITHUB_REPOSITORY':'DrReVaN/Glasses_V0.1_BLE'}):
+                release.publish()
+                self.assertFalse(state['draft'])
+                self.assertEqual(commands[0],['gh','release','edit','v0.3.0','--draft=true'])
+                state['assets'].pop()
+                with self.assertRaises(ValueError): release.publish()
+                self.assertFalse(state['draft'])
+
 if __name__=='__main__': unittest.main()
