@@ -35,8 +35,13 @@ def source_commit():
 
 def prepare():
     commit=source_commit()
-    packages=[(ROOT/'build/application/smartglasses.bin',ROOT/'build/application/smartglasses.json',commit),
-              (ROOT/'releases/legacy/Smartglasses-0.2.0-OTA.bin',ROOT/'releases/legacy/Smartglasses-0.2.0-OTA.json',LEGACY_COMMIT)]
+    # Historical releases already exist. Validate the archive, but never
+    # regenerate their notes/ZIP from today's documentation or re-upload them.
+    legacy,legacy_info=validate(ROOT/'releases/legacy/Smartglasses-0.2.0-OTA.bin',
+                                ROOT/'releases/legacy/Smartglasses-0.2.0-OTA.json')
+    if legacy_info['version']!='0.2.0' or hashlib.sha256(legacy).hexdigest()!=LEGACY_SHA:
+        raise ValueError('Historical archive changed')
+    packages=[(ROOT/'build/application/smartglasses.bin',ROOT/'build/application/smartglasses.json',commit)]
     for binary,manifest,source in packages:
         image,info=validate(binary,manifest)
         version=info['version']; parse(version)
@@ -51,7 +56,9 @@ def prepare():
         text=('Smartglasses '+version+' für STM32WB35CE.\n\n'
               'Anwendungsupdate über BLE-OTA, Protokoll 1. Benötigt den installierten OTA-Löschkorrektur-Bootloader (f55c081 oder neuer). '
               'CPU2, Option Bytes und Geräteschlüssel werden nicht verändert.\n\n'
-              'App 1.2.0 unterstützt Versionsauswahl, Updateprüfung und Rückwechsel. Vor Firmware 0.3.0 zuerst die neue App installieren.\n\n'
+              'App 1.2.1 unterstützt auch die Wiederverbindung nach längerer Abwesenheit. Zuerst die neue App installieren.\n\n'
+              '0.3.1 korrigiert den Bluetooth-Wiederanlauf nach Verbindungsabbruch: fehlgeschlagene Starts werden wiederholt, '
+              'fehlgeschlagene Verbindungsereignisse und fremde Handles überschreiben keine aktive Verbindung.\n\n'
               '0.3.0 enthält die Sonderzeichen-/X=6-Korrektur und eine eindeutige Versionskennung. '
               '0.2.0 ist der archivierte OTA-Löschkorrektur-Stand; seine Gerätekennung unterscheidet ältere Builds noch nicht.\n\n'
               'Entwicklungsversion: Desktoptests/Build geprüft; die Abnahme aller neuen Funktionen auf der Brille bleibt separat.\n\n'

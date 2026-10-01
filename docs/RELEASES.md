@@ -2,7 +2,7 @@
 
 ## Installation auf der vorhandenen Brille
 
-1. Zuerst Android-App **1.2.0** über die bisherige App installieren. Die bereitgestellte lokale APK verwendet dieselbe Entwicklungssignatur und behält Einstellungen/Benachrichtigungsfreigaben. GitHub-CI-Debug-APKs sind separat signiert; sie sind keine Austauschpakete für diese lokale APK-Reihe.
+1. Zuerst Android-App **1.2.1** über die bisherige App installieren. Die bereitgestellte lokale APK verwendet dieselbe Entwicklungssignatur und behält Einstellungen/Benachrichtigungsfreigaben. GitHub-CI-Debug-APKs sind separat signiert; sie sind keine Austauschpakete für diese lokale APK-Reihe.
 2. App öffnen und mit der Brille verbinden. Sie lädt automatisch die Versionsliste aus [GitHub-Releases](https://github.com/DrReVaN/Glasses_V0.1_BLE/releases). „Jetzt nach Updates suchen“ erzwingt die Prüfung; automatische Prüfungen sind auf einmal in sechs Stunden begrenzt.
 3. Bei **0.3.0 verfügbar** „Neue Version auswählen“ und „Herunterladen und prüfen“ wählen. Das lädt nur das Paket; auf der Brille wird nichts gelöscht oder installiert.
 4. Erst „Update starten“ und die Bestätigung in der App starten OTA. Wie bisher `OTA?` an der Brille mit Pad 1 ungefähr eine Sekunde bestätigen. Brille eingeschaltet lassen; kein Wemos erforderlich, wenn der bereits funktionierende Löschkorrektur-Bootloader installiert ist.
@@ -31,3 +31,13 @@ Die CI baut und prüft die Images auf dem Dev-Branch. Erst nach erfolgreichen Te
 GitHub kann dem eingebauten CI-Zugang das Anlegen eines Tags verweigern, wenn dessen Quellstand eine andere Workflowrevision enthält. In diesem Fall legt der Eigentümer über GitHub ein zunächst leeres Release mit dem passenden `vX.Y.Z`-Tag am exakt im Manifest genannten Commit an und startet nur den fehlgeschlagenen Veröffentlichungsschritt erneut. Für den historischen Stand dient `release/0.2.0` als unveränderter Ausgangspunkt. Die Veröffentlichung nimmt ausschließlich ein vollständig leeres Release wieder als Entwurf auf, lädt die geprüften CI-Assets und gibt es erst nach Digestprüfung frei. Releases mit vorhandenen Assets werden niemals ersetzt. Die Android-App ignoriert leere und unvollständige Releases.
 
 Die App liest die öffentliche [GitHub Releases API](https://docs.github.com/en/rest/releases/releases), sortiert Versionskomponenten numerisch und akzeptiert nur vollständige Paketpaare mit passenden Release-/Dateinamen aus diesem Repository. HTTPS, begrenzte Downloadgrößen, GitHub-Asset-Digests und SHA-256/CRC/Startvektor-/Ziel-/Versionsprüfungen sichern die Paketkonsistenz. Persönliche Benachrichtigungen werden nicht an GitHub gesendet. Die Prüfsummen sind kein unabhängiges Signatursystem: Die Veröffentlichung vertraut dem Repository und GitHub-HTTPS.
+
+## Wiederverbindung ab Firmware 0.3.1 und App 1.2.1
+
+Nach einem Reichweitenabbruch startet die Firmware das Bluetooth-Signal im Hauptablauf erneut. Sie bestätigt den tatsächlichen Start und wiederholt fehlgeschlagene Versuche einmal pro Sekunde. Der Name SMRT_GLASS wird direkt im Startbefehl gesetzt. Fehlgeschlagene Verbindungsereignisse gelten nicht mehr als Verbindung; fremde/fehlgeschlagene Trennungsereignisse löschen keine aktive Verbindung. Eine bestehende Verbindung wird dabei nicht zurückgesetzt.
+
+Die App versucht nach den ersten acht fehlgeschlagenen Verbindungsversuchen weiterhin einmal pro Minute eine Verbindung zur ausgewählten Brille. „Verbindung beenden“ stoppt das; Bluetooth ausschalten oder Berechtigungen entziehen wird respektiert. Android kann Versuche im Ruhemodus verzögern. Nach erfolgreicher Wiederverbindung werden Uhrzeit und Datum erneut vom Handy gesetzt. Unterbrochene Firmwareübertragungen werden niemals automatisch wieder aufgenommen; nach weiterhin fehlgeschlagener OTA-Abschlussprüfung bleibt die manuelle Wiederholung zugänglich.
+
+Falls die alte 0.2.0 nach einem Abbruch nicht auffindbar ist: Brillenversorgung zehn Sekunden vollständig trennen, neben dem Handy neu einschalten und wieder verbinden. Anschließend App 1.2.1 installieren und Firmware 0.3.1 über die Versionsauswahl aktualisieren. Das reguläre OTA-Update ersetzt nur die Anwendung; ein erneutes Kabelupdate des vorhandenen funktionierenden Bootloaders ist dafür nicht erforderlich. Der Langzeittest mit deiner Brille muss nach der Installation erfolgen.
+
+Bereits veröffentlichte ältere Releases einschließlich 0.2.0 und 0.3.0 behalten ihre ursprünglichen Dateien und Anleitungen. Die Veröffentlichung prüft weiterhin das unveränderte historische BIN-Archiv, erstellt aber nur das Paket der neuen Version.

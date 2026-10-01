@@ -2725,6 +2725,11 @@
           <GroupName>Smartglasses</GroupName>
           <Files>
             <File>
+              <FileName>glasses_ble.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/glasses_ble.c</FilePath>
+            </File>
+            <File>
               <FileName>glasses_core.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/glasses_core.c</FilePath>

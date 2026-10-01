@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "glasses_app.h"
 #include "glasses_ota.h"
+#include "app_ble.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -132,6 +133,7 @@ int main(void)
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
+    APP_BLE_Process();
     Glasses_Process();
     Glasses_OtaProcess();
     __WFI(); /* CPU1 sleep at the existing clock; CPU2 continues BLE. SysTick stays on. */

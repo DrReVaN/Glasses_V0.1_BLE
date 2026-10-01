@@ -29,6 +29,7 @@
 #include "app_ble.h"
 #include "glasses_app.h"
 #include "glasses_ota.h"
+#include "glasses_ble.h"
 
 #include "stm32_seq.h"
 #include "shci.h"
@@ -159,8 +160,6 @@ typedef struct
 /* USER CODE END PTD */
 
 /* Private defines -----------------------------------------------------------*/
-#define FAST_ADV_TIMEOUT               (30*1000*1000/CFG_TS_TICK_VAL) /**< 30s */
-#define INITIAL_ADV_TIMEOUT            (60*1000*1000/CFG_TS_TICK_VAL) /**< 60s */
 
 #define BD_ADDR_SIZE_LOCAL    6
 
@@ -214,14 +213,6 @@ float tab_conn_interval[SIZE_TAB_CONN_INT] = {50, 1000} ; /* ms */
 uint8_t index_con_int, mutex;
 #endif
 
-/**
- * Advertising Data
- */
-uint8_t ad_data[12] = {
-    11, AD_TYPE_COMPLETE_LOCAL_NAME, 'S', 'M', 'R', 'T', '_', 'G', 'L', 'A', 'S', 'S',  /* Complete name */
-
-};
-
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -232,8 +223,6 @@ static void BLE_StatusNot( HCI_TL_CmdStatus_t status );
 static void Ble_Tl_Init( void );
 static void Ble_Hci_Gap_Gatt_Init(void);
 static const uint8_t* BleGetBdAddress( void );
-static void Adv_Request( APP_BLE_ConnStatus_t New_Status );
-static void Adv_Cancel( void );
 #if(L2CAP_REQUEST_NEW_CONN_PARAM != 0)
 static void BLE_SVC_L2CAP_Conn_Update(uint16_t Connection_Handle);
 static void Connection_Interval_Update_Req( void );
@@ -323,7 +312,6 @@ void APP_BLE_Init( void )
   /**
    * From here, all initialization are BLE application specific
    */
-  UTIL_SEQ_RegTask( 1<<CFG_TASK_ADV_CANCEL_ID, UTIL_SEQ_RFU, Adv_Cancel);
   /**
    * Initialization of ADV - Ad Manufacturer Element - Support OTA Bit Mask
    */
@@ -353,7 +341,7 @@ void APP_BLE_Init( void )
   /**
    * Start to Advertise to be connected by a Client
    */
-   Adv_Request(APP_BLE_FAST_ADV);
+   Glasses_BleInit();
 
 /* USER CODE BEGIN APP_BLE_Init_2 */
 
@@ -386,23 +374,16 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification( void *pckt )
       hci_disconnection_complete_event_rp0 *disconnection_complete_event;
       disconnection_complete_event = (hci_disconnection_complete_event_rp0 *) event_pckt->data;
 
-      if (disconnection_complete_event->Connection_Handle == BleApplicationContext.BleApplicationContext_legacy.connectionHandle)
+      if (Glasses_BleDisconnected(disconnection_complete_event->Status,
+                                  disconnection_complete_event->Connection_Handle))
       {
-        BleApplicationContext.BleApplicationContext_legacy.connectionHandle = 0;
+        BleApplicationContext.BleApplicationContext_legacy.connectionHandle = 0xFFFF;
         BleApplicationContext.Device_Connection_Status = APP_BLE_IDLE;
-
-        APP_DBG_MSG("\r\n\r** DISCONNECTION EVENT WITH CLIENT \n");
+        handleNotification.Custom_Evt_Opcode = CUSTOM_DISCON_HANDLE_EVT;
+        handleNotification.ConnectionHandle = disconnection_complete_event->Connection_Handle;
+        Custom_APP_Notification(&handleNotification);
       }
-
-      /* restart advertising */
-      Adv_Request(APP_BLE_FAST_ADV);
-
-      /**
-       * SPECIFIC to Custom Template APP
-       */
-      handleNotification.Custom_Evt_Opcode = CUSTOM_DISCON_HANDLE_EVT;
-      handleNotification.ConnectionHandle = BleApplicationContext.BleApplicationContext_legacy.connectionHandle;
-      Custom_APP_Notification(&handleNotification);
+      /* Advertising is restarted after pending HCI events have been processed. */
       /* USER CODE BEGIN EVT_DISCONN_COMPLETE */
 
       /* USER CODE END EVT_DISCONN_COMPLETE */
@@ -434,6 +415,8 @@ SVCCTL_UserEvtFlowStatus_t SVCCTL_App_Notification( void *pckt )
            */
           connection_complete_event = (hci_le_connection_complete_event_rp0 *) meta_evt->data;
 
+          if (!Glasses_BleConnected(connection_complete_event->Status,
+                                    connection_complete_event->Connection_Handle)) break;
           APP_DBG_MSG("HCI_LE_CONNECTION_COMPLETE_SUBEVT_CODE for connection handle 0x%x\n", connection_complete_event->Connection_Handle);
           if (BleApplicationContext.Device_Connection_Status == APP_BLE_LP_CONNECTING)
           {
@@ -751,38 +734,11 @@ static void Ble_Hci_Gap_Gatt_Init(void){
    }
 }
 
-static void Adv_Request(APP_BLE_ConnStatus_t New_Status)
+void APP_BLE_Process(void)
 {
-  tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
-
-    BleApplicationContext.Device_Connection_Status = New_Status;
-    /* Start Fast or Low Power Advertising */
-    ret = aci_gap_set_discoverable(
-        ADV_TYPE,
-        CFG_FAST_CONN_ADV_INTERVAL_MIN,
-        CFG_FAST_CONN_ADV_INTERVAL_MAX,
-        CFG_BLE_ADDRESS_TYPE,
-        ADV_FILTER,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0);
-
-    /* Update Advertising data */
-    ret = aci_gap_update_adv_data(sizeof(ad_data), (uint8_t*) ad_data);
-
-    if (ret == BLE_STATUS_SUCCESS)
-    {
-        APP_DBG_MSG("Successfully Start Fast Advertising \n" );
-    }
-    else
-    {
-        APP_DBG_MSG("Start Fast Advertising Failed , result: %d \n", ret);
-    }
-
-  return;
+  Glasses_BleProcess();
+  if (BleApplicationContext.BleApplicationContext_legacy.connectionHandle == 0xFFFF)
+    BleApplicationContext.Device_Connection_Status = Glasses_BleAdvertising() ? APP_BLE_FAST_ADV : APP_BLE_IDLE;
 }
 
 const uint8_t* BleGetBdAddress( void )
@@ -842,38 +798,6 @@ const uint8_t* BleGetBdAddress( void )
  *SPECIFIC FUNCTIONS FOR CUSTOM
  *
  *************************************************************/
-static void Adv_Cancel( void )
-{
-/* USER CODE BEGIN Adv_Cancel_1 */
-
-/* USER CODE END Adv_Cancel_1 */
-
-  if (BleApplicationContext.Device_Connection_Status != APP_BLE_CONNECTED_SERVER)
-
-  {
-
-    tBleStatus result = 0x00;
-
-    result = aci_gap_set_non_discoverable();
-
-    BleApplicationContext.Device_Connection_Status = APP_BLE_IDLE;
-    if (result == BLE_STATUS_SUCCESS)
-    {
-      APP_DBG_MSG("  \r\n\r");APP_DBG_MSG("** STOP ADVERTISING **  \r\n\r");
-    }
-    else
-    {
-      APP_DBG_MSG("** STOP ADVERTISING **  Failed \r\n\r");
-    }
-
-  }
-
-/* USER CODE BEGIN Adv_Cancel_2 */
-
-/* USER CODE END Adv_Cancel_2 */
-  return;
-}
-
 #if(L2CAP_REQUEST_NEW_CONN_PARAM != 0)
 void BLE_SVC_L2CAP_Conn_Update(uint16_t Connection_Handle)
 {

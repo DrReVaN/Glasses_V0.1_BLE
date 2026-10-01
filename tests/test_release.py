@@ -8,12 +8,33 @@ import unittest
 from unittest.mock import patch
 import hashlib
 import zlib
+import shutil
 
 TOOLS=Path(__file__).resolve().parents[1]/'tools'
 spec=importlib.util.spec_from_file_location('release',TOOLS/'release.py')
 release=importlib.util.module_from_spec(spec);spec.loader.exec_module(release)
 
 class ReleaseTests(unittest.TestCase):
+    def test_new_package_does_not_regenerate_historical_release_assets(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary); folder=self.fixture(root)
+            app=root/'build/application';app.mkdir()
+            for ext in ('bin','json'):
+                shutil.copy2(folder/('Smartglasses-0.3.0-OTA.'+ext),app/('smartglasses.'+ext))
+            legacy=root/'releases/legacy';legacy.mkdir(parents=True)
+            for ext in ('bin','json'):
+                shutil.copy2(release.ROOT/'releases/legacy'/('Smartglasses-0.2.0-OTA.'+ext),legacy)
+            old=root/'build/releases/v0.2.0';old.mkdir()
+            (old/'Anleitung.md').write_text('Original published instructions')
+            with patch.object(release,'ROOT',root),patch.object(release,'source_commit',lambda:'1'*40),patch.object(release,'current',lambda:'0.3.0'):
+                release.prepare()
+                self.assertEqual(list(old.iterdir()),[old/'Anleitung.md'])
+                self.assertEqual((old/'Anleitung.md').read_text(),'Original published instructions')
+                self.assertTrue((folder/'Smartglasses-0.3.0-OTA.zip').exists())
+                binary=legacy/'Smartglasses-0.2.0-OTA.bin'
+                binary.write_bytes(binary.read_bytes()[:-1])
+                with self.assertRaises(ValueError): release.prepare()
+
     def fixture(self,root):
         folder=root/'build/releases/v0.3.0';folder.mkdir(parents=True)
         data=bytearray(512);struct.pack_into('<II',data,0,0x20007800,0x0801014d)
